@@ -108,8 +108,8 @@
         /* Kalender */
         .calendar table{ width:100%; border-collapse:collapse; text-align:center; margin-top:10px; }
         .calendar th{ font-size: 11px; padding-bottom: 8px; opacity: 0.7; }
-        .calendar td{ padding: 6px; font-size: 12px; }
-        .today{ background:#e93538; border-radius:50%; font-weight:700; color: white; }
+        .calendar td{ padding: 6px; font-size: 12px; width: 14.28%; }
+        .today{ background:#e93538; border-radius:50%; font-weight:700; color: white; display: inline-block; width: 25px; height: 25px; line-height: 25px; }
 
         /* Responsivitas */
         @media(max-width:950px){ 
@@ -192,8 +192,8 @@
         <h3 class="gradient-text" style="margin-top:24px; font-size: 16px;">Kalender</h3>
         <div class="card calendar">
             <div class="calendar-header" style="display:flex; justify-content:space-between; margin-bottom:10px; gap: 5px;">
-                <select id="bulan" style="background:#0b1c4d; color:white; border:1px solid rgba(255,255,255,0.3); border-radius:5px; padding: 4px; font-size: 11px; flex: 1;"></select>
-                <select id="tahun" style="background:#0b1c4d; color:white; border:1px solid rgba(255,255,255,0.3); border-radius:5px; padding: 4px; font-size: 11px; flex: 1;"></select>
+                <select id="bulan" style="background:#0b1c4d; color:white; border:1px solid rgba(255,255,255,0.3); border-radius:5px; padding: 4px; font-size: 11px; flex: 1;" onchange="renderCalendar()"></select>
+                <select id="tahun" style="background:#0b1c4d; color:white; border:1px solid rgba(255,255,255,0.3); border-radius:5px; padding: 4px; font-size: 11px; flex: 1;" onchange="renderCalendar()"></select>
             </div>
             <table>
                 <thead><tr><th>Min</th><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th></tr></thead>
@@ -236,7 +236,6 @@
                 const role = (data.role || "siswa").toLowerCase().trim();
                 document.getElementById("sapaan").innerText = `Selamat Datang, ${data.nama || 'User'}!`;
 
-                // PERUBAHAN DISINI: Otoritas admin dan guru disamakan
                 if (role === "admin" || role === "guru") {
                     adminLinkContainer.innerHTML = `<a href="admin/admin-cms.html" class="btn-admin"><i class="fa-solid fa-user-shield"></i> Guru</a>`;
                 }
@@ -257,24 +256,51 @@
 <script>
     const bulanSelect=document.getElementById("bulan");
     const tahunSelect=document.getElementById("tahun");
-    const body=document.getElementById("calendar-body");
+    const calendarBody=document.getElementById("calendar-body");
     const namaBulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
     const now=new Date();
 
     namaBulan.forEach((b,i)=>bulanSelect.innerHTML+=`<option value="${i}">${b}</option>`);
     for(let y=2024;y<=2030;y++)tahunSelect.innerHTML+=`<option value="${y}">${y}</option>`;
-    bulanSelect.value=now.getMonth(); tahunSelect.value=now.getFullYear();
+    
+    bulanSelect.value=now.getMonth(); 
+    tahunSelect.value=now.getFullYear();
 
     function renderCalendar(){
-        body.innerHTML="";
-        const m=+bulanSelect.value; const y=+tahunSelect.value;
-        const first=new Date(y,m,1).getDay(); const days=new Date(y,m+1,0).getDate();
-        let d=1;
-        for(let i=0;i<6;i++){
-            const row=document.createElement("tr");
-            for(let j=0;j<7;j++){
-                const cell=document.createElement("td");
-                if(i===0 && j<first || d>days){cell.innerHTML="";}
-                else{
-                    cell.innerText=d;
-                    if(d===now.getDate
+        calendarBody.innerHTML="";
+        const m = parseInt(bulanSelect.value); 
+        const y = parseInt(tahunSelect.value);
+        
+        const firstDay = new Date(y, m, 1).getDay(); 
+        const totalDays = new Date(y, m + 1, 0).getDate();
+        
+        let date = 1;
+        for(let i = 0; i < 6; i++){
+            const row = document.createElement("tr");
+            let hasContent = false;
+            for(let j = 0; j < 7; j++){
+                const cell = document.createElement("td");
+                if(i === 0 && j < firstDay){
+                    cell.innerHTML = "";
+                } else if(date > totalDays){
+                    cell.innerHTML = "";
+                } else {
+                    const span = document.createElement("span");
+                    span.innerText = date;
+                    if(date === now.getDate() && m === now.getMonth() && y === now.getFullYear()){
+                        span.classList.add("today");
+                    }
+                    cell.appendChild(span);
+                    date++;
+                    hasContent = true;
+                }
+                row.appendChild(cell);
+            }
+            if(hasContent) calendarBody.appendChild(row);
+        }
+    }
+
+    renderCalendar();
+</script>
+</body>
+</html>
