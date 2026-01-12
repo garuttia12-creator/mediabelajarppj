@@ -18,25 +18,19 @@
         .options-grid{display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px;}
         .option-item{background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; border: 1px solid transparent;}
         .option-item:hover{background: rgba(255,255,255,0.2); border-color: #f8c471;}
-        
-        /* Style untuk input yang didisable */
         input[type="radio"]:disabled { cursor: not-allowed; filter: grayscale(1); }
         .option-item:has(input:disabled) { cursor: not-allowed; opacity: 0.7; }
         .option-item:has(input:disabled):hover { background: rgba(255,255,255,0.1); border-color: transparent; }
-
         button#btnKirimKuis{background: linear-gradient(90deg,#4cc9f0,#4361ee); color:#fff; border:none; padding:18px; border-radius:35px; cursor:pointer; font-weight:600; width:100%; font-size: 16px; margin-top: 20px; transition: 0.3s;}
         button#btnKirimKuis:hover{transform: scale(1.02); box-shadow: 0 5px 20px rgba(67,97,238,0.4);}
-        
-        /* Style khusus tombol lulus */
         button.lulus-style { background: linear-gradient(90deg, #27ae60, #2ecc71) !important; cursor: pointer !important; }
-
         .btn-back{color: #f8c471; text-decoration: none; font-size: 14px; margin-bottom: 20px; display: inline-block;}
     </style>
 </head>
 <body>
 
 <div class="reader-container">
-    <a href="materi.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog</a>
+    <a href="../index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog</a>
     <h1 id="judul-materi" class="gradient-text">Memuat Materi...</h1>
     <div id="isi-konten" class="isi-konten">Mengambil isi pelajaran...</div>
 
@@ -50,6 +44,7 @@
 </div>
 
 <script type="module">
+    // Diperbaiki: Menggunakan ../ agar keluar folder materi dan masuk ke folder js
     import { db, auth } from "../js/firebase-config.js";
     import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -57,12 +52,14 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     let waktuMulai; 
-    let statusLulusUser = false; // Flag untuk keamanan
+    let statusLulusUser = false;
 
-    if(!id) window.location.href = "materi.html";
+    // Diperbaiki: Jika ID tidak ada, kembali ke halaman utama
+    if(!id) window.location.href = "../index.html";
 
     onAuthStateChanged(auth, (user) => {
         if (!user) {
+            // Diperbaiki: Jika belum login, keluar folder materi ke root
             window.location.href = "../login.html";
         } else {
             checkStatusAndLoad(user.uid);
@@ -70,24 +67,25 @@
     });
 
     async function checkStatusAndLoad(uid) {
-        const progSnap = await get(ref(db, `users/${uid}/progres/${id}`));
-        statusLulusUser = progSnap.exists() && progSnap.val().lulus === true;
+        try {
+            const progSnap = await get(ref(db, `users/${uid}/progres/${id}`));
+            statusLulusUser = progSnap.exists() && progSnap.val().lulus === true;
 
-        await loadMateri();
+            await loadMateri();
 
-        if (statusLulusUser) {
-            const btn = document.getElementById('btnKirimKuis');
-            // Ubah tombol menjadi link navigasi
-            btn.type = "button"; 
-            btn.classList.add('lulus-style');
-            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk melanjutkan materi';
-            btn.onclick = () => window.location.href = "materi.html";
+            if (statusLulusUser) {
+                const btn = document.getElementById('btnKirimKuis');
+                btn.type = "button"; 
+                btn.classList.add('lulus-style');
+                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk kembali';
+                // Diperbaiki: Navigasi kembali ke halaman utama
+                btn.onclick = () => window.location.href = "../index.html";
 
-            // Kunci semua pilihan agar tidak bisa diklik
-            document.querySelectorAll('input[type="radio"]').forEach(input => {
-                input.disabled = true;
-            });
-        }
+                document.querySelectorAll('input[type="radio"]').forEach(input => {
+                    input.disabled = true;
+                });
+            }
+        } catch (e) { console.error("Error loading status:", e); }
     }
 
     async function loadMateri() {
@@ -125,9 +123,8 @@
     document.getElementById('quizForm').onsubmit = async (e) => {
         e.preventDefault();
 
-        // PROTEKSI TAMBAHAN: Jika status sudah lulus, jangan jalankan submit apapun
         if(statusLulusUser) {
-            window.location.href = "materi.html";
+            window.location.href = "../index.html";
             return;
         }
 
@@ -176,7 +173,7 @@
                 await update(ref(db), updates);
                 
                 alert(isLulus ? `LULUS! Skor: ${skor}` : `BELUM LULUS. Skor: ${skor} (Minimal 70)`);
-                window.location.href = "materi.html";
+                window.location.href = "../index.html";
             } catch (error) {
                 btn.disabled = false;
                 btn.innerText = "Kirim Jawaban & Selesai";
