@@ -143,9 +143,11 @@
                     get(ref(db, `users/${user.uid}/progres`))
                 ]);
 
-                // Logika Header Dinamis
-                const is = bioSnap.exists() && (bioSnap.val().role || "").toLowerCase() === "admin";
-                if (is) {
+                // Perbaikan Logika Otorisasi: Mengecek Role Admin atau Guru
+                const role = bioSnap.exists() ? (bioSnap.val().role || "").toLowerCase() : "";
+                const isAdmin = (role === "admin" || role === "guru");
+
+                if (isAdmin) {
                     adminLinkContainer.innerHTML = `
                         <a href="../admin/admin-cms.html" class="btn-admin">
                             <i class="fa-solid fa-user-shield"></i> Guru
@@ -189,6 +191,7 @@
             materiArray.forEach((item, index) => {
                 let isLocked = false;
                 
+                // Jika bukan admin/guru, berlakukan sistem kunci bertahap
                 if (!isAdmin && index > 0) {
                     const materiSebelumnyaKey = materiArray[index - 1].key;
                     if (!progres[materiSebelumnyaKey] || progres[materiSebelumnyaKey].lulus !== true) {
@@ -209,7 +212,7 @@
                     listDiv.innerHTML += `
                         <a href="baca-materi.html?id=${item.key}" class="materi-card">
                             <div class="id-badge">Indikator ${item.id_urut || '0'}</div>
-                            ${isAdmin ? '<div class="lock-icon" title="Mode Admin"><i class="fa-solid fa-user-shield"></i></div>' : ''}
+                            ${isAdmin ? '<div class="lock-icon" title="Mode Otoritas"><i class="fa-solid fa-user-shield"></i></div>' : ''}
                             <div class="icon-box"><i class="fa-solid fa-book-open"></i></div>
                             <h3>${item.judul}</h3>
                             <div class="badge-status ${item.hasKuis ? 'has-kuis' : 'no-kuis'}">
@@ -223,4 +226,3 @@
 </script>
 </body>
 </html>
-
