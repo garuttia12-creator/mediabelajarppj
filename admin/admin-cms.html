@@ -63,7 +63,7 @@
 <div class="cms-container">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2 class="gradient-text"><i class="fa-solid fa-user-shield"></i> Panel Admin</h2>
-        <button onclick="window.location.href='dashboard.html'" style="background:rgba(255,0,0,0.6); color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">Dashboard</button>
+        <button id="btnBackToDashboard" style="background:rgba(255,0,0,0.6); color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">Dashboard</button>
     </div>
     
     <form id="masterForm">
@@ -98,6 +98,11 @@
     import { db, auth } from "../js/firebase-config.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { ref, set, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // FIX: Handle Tombol Dashboard keluar folder admin
+    document.getElementById('btnBackToDashboard').onclick = () => {
+        window.location.href = "../dashboard.html";
+    };
 
     var quill = new Quill('#editor-container', {
         modules: {
@@ -145,8 +150,14 @@
             if (bioSnap.exists() && bioSnap.val().role === "admin") {
                 document.body.style.display = "block";
                 hitungMateri();
-            } else { window.location.href = "dashboard.html"; }
-        } else { window.location.href = "login.html"; }
+            } else { 
+                // FIX: Path keluar folder admin
+                window.location.href = "../dashboard.html"; 
+            }
+        } else { 
+            // FIX: Path keluar folder admin
+            window.location.href = "../login.html"; 
+        }
     });
 
     async function hitungMateri() {
@@ -199,7 +210,6 @@
             if(!currentEditingID) {
                 dataMateri.id_urut = materiCount + 1;
             } else {
-                // Pertahankan id_urut yang lama jika sedang edit
                 const oldData = await get(ref(db, `materi/${currentEditingID}`));
                 dataMateri.id_urut = oldData.val().id_urut;
             }
@@ -214,7 +224,6 @@
         currentEditingID = null;
         form.reset();
         quill.setContents([]);
-        // Reset kolom kuis secara manual karena form.reset() terkadang tidak membersihkan select/input kuis dengan sempurna
         document.querySelectorAll('.tanya, .optA, .optB, .optC, .optD').forEach(el => el.value = "");
         document.querySelectorAll('.kunci').forEach(el => el.selectedIndex = 0);
         
@@ -250,14 +259,11 @@
             const data = snap.val();
             currentEditingID = id;
             
-            // Isi Form Dasar
             document.getElementById('judul').value = data.judul;
             quill.root.innerHTML = data.konten;
             document.getElementById('media_link').value = data.media || "";
             
-            // ISI KUIS (Perbaikan: Reset kolom dulu baru diisi)
             for(let i=1; i<=5; i++){
-                // Bersihkan field kuis terlebih dahulu
                 document.querySelector(`.tanya[data-id="${i}"]`).value = "";
                 document.querySelector(`.optA[data-id="${i}"]`).value = "";
                 document.querySelector(`.optB[data-id="${i}"]`).value = "";
@@ -265,7 +271,6 @@
                 document.querySelector(`.optD[data-id="${i}"]`).value = "";
                 document.querySelector(`.kunci[data-id="${i}"]`).value = "a";
 
-                // Isi jika data ada
                 const kuisKey = `kuis_${id}_${i}`;
                 if(data.bank_soal && data.bank_soal[kuisKey]){
                     const s = data.bank_soal[kuisKey];
