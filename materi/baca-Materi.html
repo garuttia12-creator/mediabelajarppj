@@ -30,7 +30,7 @@
 <body>
 
 <div class="reader-container">
-    <a href="../index.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog</a>
+    <a href="../materi.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog</a>
     <h1 id="judul-materi" class="gradient-text">Memuat Materi...</h1>
     <div id="isi-konten" class="isi-konten">Mengambil isi pelajaran...</div>
 
@@ -44,7 +44,6 @@
 </div>
 
 <script type="module">
-    // Diperbaiki: Menggunakan ../ agar keluar folder materi dan masuk ke folder js
     import { db, auth } from "../js/firebase-config.js";
     import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -54,12 +53,11 @@
     let waktuMulai; 
     let statusLulusUser = false;
 
-    // Diperbaiki: Jika ID tidak ada, kembali ke halaman utama
-    if(!id) window.location.href = "../index.html";
+    // Diperbaiki: Jika ID tidak ada, arahkan keluar folder ke materi.html
+    if(!id) window.location.href = "../materi.html";
 
     onAuthStateChanged(auth, (user) => {
         if (!user) {
-            // Diperbaiki: Jika belum login, keluar folder materi ke root
             window.location.href = "../login.html";
         } else {
             checkStatusAndLoad(user.uid);
@@ -77,15 +75,17 @@
                 const btn = document.getElementById('btnKirimKuis');
                 btn.type = "button"; 
                 btn.classList.add('lulus-style');
-                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk kembali';
-                // Diperbaiki: Navigasi kembali ke halaman utama
-                btn.onclick = () => window.location.href = "../index.html";
+                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk melanjutkan materi';
+                // Diperbaiki: Arahkan navigasi keluar folder
+                btn.onclick = () => window.location.href = "../materi.html";
 
                 document.querySelectorAll('input[type="radio"]').forEach(input => {
                     input.disabled = true;
                 });
             }
-        } catch (e) { console.error("Error loading status:", e); }
+        } catch (error) {
+            console.error("Error checking progress:", error);
+        }
     }
 
     async function loadMateri() {
@@ -99,6 +99,8 @@
                 renderKuis(data.bank_soal);
                 document.getElementById('kuis-area').style.display = "block";
             }
+        } else {
+            document.getElementById('isi-konten').innerText = "Materi tidak ditemukan.";
         }
     }
 
@@ -124,7 +126,7 @@
         e.preventDefault();
 
         if(statusLulusUser) {
-            window.location.href = "../index.html";
+            window.location.href = "../materi.html";
             return;
         }
 
@@ -173,7 +175,8 @@
                 await update(ref(db), updates);
                 
                 alert(isLulus ? `LULUS! Skor: ${skor}` : `BELUM LULUS. Skor: ${skor} (Minimal 70)`);
-                window.location.href = "../index.html";
+                // Diperbaiki: Navigasi keluar folder setelah kuis selesai
+                window.location.href = "../materi.html";
             } catch (error) {
                 btn.disabled = false;
                 btn.innerText = "Kirim Jawaban & Selesai";
