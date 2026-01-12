@@ -21,11 +21,30 @@
         label{display:block; margin-bottom:5px; font-size:13px; opacity: 0.8;}
         
         input, select{width:100%; padding:12px; background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:10px; color: #fff; outline: none;}
+        
         select option { background: #1e2f8f; color: #fff; }
         
         #editor-container { background: white; color: black; border-radius: 10px; height: 350px; margin-bottom: 20px; font-size: 16px; }
         .ql-toolbar { background: #f3f3f3; border-radius: 10px 10px 0 0; border: none !important; }
         .ql-container { border: none !important; border-radius: 0 0 10px 10px; }
+
+        .ql-snow .ql-tooltip {
+            background-color: #ffffff !important;
+            color: #333 !important;
+            border: 1px solid #ccc !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+            border-radius: 8px !important;
+            z-index: 9999;
+        }
+        .ql-snow .ql-tooltip input[type=text] {
+            color: #000 !important;
+            background: #fff !important;
+            border: 1px solid #ccc !important;
+        }
+        .ql-snow .ql-tooltip a.ql-action::after {
+            color: #4361ee !important;
+            font-weight: bold;
+        }
 
         .kuis-box{background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid #ff6f61;}
         .grid-options{display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
@@ -44,7 +63,7 @@
 <div class="cms-container">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <h2 class="gradient-text"><i class="fa-solid fa-user-shield"></i> Panel Admin</h2>
-        <button onclick="window.location.href='../dashboard.html'" style="background:rgba(255,255,255,0.1); color:white; border:1px solid rgba(255,255,255,0.3); padding:8px 20px; border-radius:20px; cursor:pointer;">Dashboard</button>
+        <button onclick="window.location.href='dashboard.html'" style="background:rgba(255,0,0,0.6); color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">Dashboard</button>
     </div>
     
     <form id="masterForm">
@@ -67,7 +86,7 @@
         <div id="soal-container"></div>
 
         <button type="submit" id="btnSimpan">Publikasikan Sebagai <span id="label-urut">Materi...</span> <i class="fa-solid fa-paper-plane"></i></button>
-        <button type="button" id="btnBatalEdit" style="display:none; background:rgba(255,255,255,0.2); color:white; border:none; padding:10px; border-radius:35px; width:100%; margin-top:10px; cursor:pointer;">Batal Edit / Reset</button>
+        <button type="button" id="btnBatalEdit" style="display:none; background:gray; color:white; border:none; padding:10px; border-radius:35px; width:100%; margin-top:10px; cursor:pointer;">Batal Edit</button>
     </form>
 
     <div class="section-title">Daftar Materi Terbit</div>
@@ -84,8 +103,9 @@
         modules: {
             toolbar: [
                 [{ header: [1, 2, 3, false] }],
-                ['bold', 'italic', 'underline'],
+                ['bold', 'italic', 'underline', 'strike'],
                 [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
                 ['link', 'image', 'video'],
                 ['clean']
             ]
@@ -125,12 +145,8 @@
             if (bioSnap.exists() && bioSnap.val().role === "admin") {
                 document.body.style.display = "block";
                 hitungMateri();
-            } else { 
-                window.location.href = "../dashboard.html"; // FIXED: Path
-            }
-        } else { 
-            window.location.href = "../login.html"; // FIXED: Path
-        }
+            } else { window.location.href = "dashboard.html"; }
+        } else { window.location.href = "login.html"; }
     });
 
     async function hitungMateri() {
@@ -183,8 +199,9 @@
             if(!currentEditingID) {
                 dataMateri.id_urut = materiCount + 1;
             } else {
-                const oldSnap = await get(ref(db, `materi/${currentEditingID}`));
-                dataMateri.id_urut = oldSnap.val().id_urut;
+                // Pertahankan id_urut yang lama jika sedang edit
+                const oldData = await get(ref(db, `materi/${currentEditingID}`));
+                dataMateri.id_urut = oldData.val().id_urut;
             }
 
             await set(ref(db, 'materi/' + materiID), dataMateri);
@@ -197,6 +214,7 @@
         currentEditingID = null;
         form.reset();
         quill.setContents([]);
+        // Reset kolom kuis secara manual karena form.reset() terkadang tidak membersihkan select/input kuis dengan sempurna
         document.querySelectorAll('.tanya, .optA, .optB, .optC, .optD').forEach(el => el.value = "");
         document.querySelectorAll('.kunci').forEach(el => el.selectedIndex = 0);
         
@@ -210,15 +228,8 @@
     onValue(ref(db, 'materi'), (snap) => {
         const listDiv = document.getElementById('list-materi');
         listDiv.innerHTML = "";
-        if(!snap.exists()) return;
-
-        const dataArr = [];
-        snap.forEach(s => { dataArr.push({key: s.key, ...s.val()}); });
-        
-        // Urutkan berdasarkan id_urut
-        dataArr.sort((a,b) => (a.id_urut || 0) - (b.id_urut || 0));
-
-        dataArr.forEach(data => {
+        snap.forEach(c => {
+            const data = c.val();
             listDiv.innerHTML += `
                 <div class="materi-card">
                     <div>
@@ -226,8 +237,8 @@
                         <span>${data.judul}</span>
                     </div>
                     <div class="action-btns">
-                        <button onclick="editMateri('${data.key}')" style="background:#4cc9f0;"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="hapusM('${data.key}')" style="background:rgba(255,0,0,0.5);"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="editMateri('${c.key}')" style="background:#4cc9f0;"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="hapusM('${c.key}')" style="background:rgba(255,0,0,0.5);"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>`;
         });
@@ -239,20 +250,32 @@
             const data = snap.val();
             currentEditingID = id;
             
+            // Isi Form Dasar
             document.getElementById('judul').value = data.judul;
             quill.root.innerHTML = data.konten;
             document.getElementById('media_link').value = data.media || "";
             
+            // ISI KUIS (Perbaikan: Reset kolom dulu baru diisi)
             for(let i=1; i<=5; i++){
+                // Bersihkan field kuis terlebih dahulu
+                document.querySelector(`.tanya[data-id="${i}"]`).value = "";
+                document.querySelector(`.optA[data-id="${i}"]`).value = "";
+                document.querySelector(`.optB[data-id="${i}"]`).value = "";
+                document.querySelector(`.optC[data-id="${i}"]`).value = "";
+                document.querySelector(`.optD[data-id="${i}"]`).value = "";
+                document.querySelector(`.kunci[data-id="${i}"]`).value = "a";
+
+                // Isi jika data ada
                 const kuisKey = `kuis_${id}_${i}`;
-                const hasKuis = data.bank_soal && data.bank_soal[kuisKey];
-                
-                document.querySelector(`.tanya[data-id="${i}"]`).value = hasKuis ? data.bank_soal[kuisKey].tanya : "";
-                document.querySelector(`.optA[data-id="${i}"]`).value = hasKuis ? data.bank_soal[kuisKey].a : "";
-                document.querySelector(`.optB[data-id="${i}"]`).value = hasKuis ? data.bank_soal[kuisKey].b : "";
-                document.querySelector(`.optC[data-id="${i}"]`).value = hasKuis ? data.bank_soal[kuisKey].c : "";
-                document.querySelector(`.optD[data-id="${i}"]`).value = hasKuis ? data.bank_soal[kuisKey].d : "";
-                document.querySelector(`.kunci[data-id="${i}"]`).value = hasKuis ? data.bank_soal[kuisKey].kunci : "a";
+                if(data.bank_soal && data.bank_soal[kuisKey]){
+                    const s = data.bank_soal[kuisKey];
+                    document.querySelector(`.tanya[data-id="${i}"]`).value = s.tanya || "";
+                    document.querySelector(`.optA[data-id="${i}"]`).value = s.a || "";
+                    document.querySelector(`.optB[data-id="${i}"]`).value = s.b || "";
+                    document.querySelector(`.optC[data-id="${i}"]`).value = s.c || "";
+                    document.querySelector(`.optD[data-id="${i}"]`).value = s.d || "";
+                    document.querySelector(`.kunci[data-id="${i}"]`).value = s.kunci || "a";
+                }
             }
             
             document.getElementById('btnSimpan').innerHTML = `Update ${id} <i class="fa-solid fa-save"></i>`;
@@ -262,9 +285,7 @@
     };
 
     window.hapusM = (id) => { 
-        if(confirm("Hapus materi ini? Semua progres siswa pada materi ini juga akan hilang.")) {
-            remove(ref(db, `materi/${id}`)); 
-        }
+        if(confirm("Hapus materi ini?")) remove(ref(db, `materi/${id}`)); 
     };
 </script>
 </body>
