@@ -7,28 +7,78 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        /* ============ RESET & BASE ============ */
         *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-        body{background:linear-gradient(180deg,#1e2f8f,#0b1c4d); color:#fff; padding:20px; min-height:100vh; display:none;}
-        .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        body{background:linear-gradient(180deg,#1e2f8f,#0b1c4d); color:#fff; min-height:100vh; display:none; overflow-x: hidden;}
+        
+        /* Navbar Dinamis (Header Dashboard) */
+        .navbar{ position:fixed; width:100%; top:0; background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); z-index:1000; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.2); }
+        .nav-container{ max-width:1200px; margin:auto; display:flex; justify-content:space-between; align-items:center; padding:0 20px; }
+        .brand{ display:flex; align-items:center; gap:10px; }
+        .logo{ width: clamp(35px, 10vw, 45px); }
+        .brand-text h1{ font-size: clamp(14px, 4vw, 18px); margin:0; }
+        .brand-text span{ font-size: clamp(10px, 3vw, 12px); opacity:0.8; }
+        
+        nav ul{ display:flex; list-style:none; gap:15px; align-items: center; }
+        nav a{ color:#fff; text-decoration:none; font-size: clamp(12px, 3vw, 14px); font-weight:500; transition: 0.3s; }
+        nav a:hover{ opacity: 0.8; }
+        .active{ color:#ff6f61 !important; }
+
+        /* Style Khusus Tombol Admin */
+        .btn-admin {
+            background: #f8c471;
+            color: #0b1c4d !important;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 700 !important;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ============ KONTEN MATERI ============ */
+        .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 100px 20px 40px; }
+        
+        .header-section { margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
         .gradient-text{ background: linear-gradient(90deg,#e93538,#ff6f61,#f8c471); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; font-size: clamp(24px, 4vw, 32px); }
-        .materi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; justify-content: center; }
+        
+        .materi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; justify-content: center; }
         .materi-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 40px 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; cursor: pointer; text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2); position: relative; }
         .materi-card:hover:not(.locked){ transform: translateY(-10px); border-color: #f8c471; }
         .materi-card.locked { cursor: not-allowed; opacity: 0.5; filter: grayscale(1); }
+        
         .lock-icon { position: absolute; top: 15px; right: 15px; color: #f8c471; font-size: 18px; }
         .icon-box { width: 80px; height: 80px; background: rgba(248, 196, 113, 0.1); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #f8c471; font-size: 35px; border: 1px solid rgba(248, 196, 113, 0.2); }
         .materi-card h3 { font-size: 18px; color: #fff; margin-bottom: 25px; font-weight: 600; min-height: 54px; display: flex; align-items: center; }
         .id-badge { position: absolute; top: 20px; left: 20px; background: rgba(248, 196, 113, 0.2); padding: 5px 12px; border-radius: 10px; font-size: 11px; color: #f8c471; font-weight: 700; }
+        
         .badge-status { width: 100%; padding: 10px; border-radius: 14px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .has-kuis { background: linear-gradient(90deg,#ff6f61,#e93538); box-shadow: 0 4px 15px rgba(233, 53, 56, 0.3); }
         .no-kuis { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-back { background: rgba(255,255,255,0.1); color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 15px; font-size: 14px; font-weight: 500; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; display: flex; align-items: center; gap: 10px; }
-        .btn-back:hover { background: #e93538; border-color: transparent; transform: scale(1.05); }
-        @media (max-width: 600px) { .header-section { flex-direction: column; text-align: center; gap: 20px; } }
+
+        @media (max-width: 600px) { .header-section { text-align: center; } }
     </style>
 </head>
 <body>
+
+<header class="navbar">
+    <div class="nav-container">
+        <div class="brand">
+            <img src="../img/logo-smkn9.png" class="logo">
+            <div class="brand-text">
+                <h1>SMKN 9 Garut</h1>
+                <span>Media Pembelajaran TJKT</span>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="../dashboard.html">Dashboard</a></li>
+                <li id="admin-link"></li> 
+                <li><a href="#" id="btnLogout">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
 
 <div class="container">
     <header class="header-section">
@@ -36,7 +86,6 @@
             <h2 class="gradient-text">Modul Pembelajaran</h2>
             <p style="opacity: 0.6; font-size: 14px; margin-top: 5px;">Akses materi TJKT secara sistematis.</p>
         </div>
-        <a href="../dashboard.html" class="btn-back"><i class="fa-solid fa-house"></i> Dashboard</a>
     </header>
 
     <div id="materi-list" class="materi-grid">
@@ -49,10 +98,11 @@
 
 <script type="module">
     import { db, auth } from "../js/firebase-config.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const listDiv = document.getElementById('materi-list');
+    const adminLinkContainer = document.getElementById("admin-link");
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -63,9 +113,16 @@
                     get(ref(db, `users/${user.uid}/progres`))
                 ]);
 
-                const isAdmin = bioSnap.exists() && bioSnap.val().role === "admin";
-                const progres = progresSnap.exists() ? progresSnap.val() : {};
+                // Logika Header Dinamis
+                const isAdmin = bioSnap.exists() && (bioSnap.val().role || "").toLowerCase() === "admin";
+                if (isAdmin) {
+                    adminLinkContainer.innerHTML = `
+                        <a href="../admin/admin-cms.html" class="btn-admin">
+                            <i class="fa-solid fa-user-shield"></i> Admin
+                        </a>`;
+                }
 
+                const progres = progresSnap.exists() ? progresSnap.val() : {};
                 muatMateri(isAdmin, progres);
             } catch (err) {
                 console.error(err);
@@ -73,6 +130,17 @@
             }
         } else {
             window.location.href = "../login.html";
+        }
+    });
+
+    // Logout Logic
+    document.getElementById('btnLogout').addEventListener('click', (e) => {
+        e.preventDefault();
+        if(confirm("Apakah Anda yakin ingin keluar?")) {
+            signOut(auth).then(() => {
+                localStorage.clear();
+                window.location.href = "../login.html";
+            });
         }
     });
 
@@ -85,17 +153,14 @@
 
             let materiArray = [];
             snap.forEach(c => { materiArray.push({ key: c.key, ...c.val() }); });
-
             materiArray.sort((a, b) => (parseInt(a.id_urut) || 0) - (parseInt(b.id_urut) || 0));
 
             listDiv.innerHTML = ""; 
             materiArray.forEach((item, index) => {
                 let isLocked = false;
                 
-                // Logika: Kunci materi jika materi sebelumnya belum LULUS
                 if (!isAdmin && index > 0) {
                     const materiSebelumnyaKey = materiArray[index - 1].key;
-                    // Cek progres materi sebelumnya (menggunakan .lulus)
                     if (!progres[materiSebelumnyaKey] || progres[materiSebelumnyaKey].lulus !== true) {
                         isLocked = true;
                     }
