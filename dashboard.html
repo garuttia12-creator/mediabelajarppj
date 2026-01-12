@@ -69,6 +69,15 @@
             font-size: clamp(12px, 3vw, 14px); 
         }
         .materi-item:hover{ transform:translateY(-5px); background:rgba(255,255,255,0.25); border-color: #f8c471; }
+        
+        /* CSS UNTUK MENGUNCI MATERI */
+        .materi-item.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none; /* Mematikan klik */
+            filter: grayscale(0.8);
+        }
+        
         .materi-icon{ width:45px; height:45px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.25); font-size:20px; flex-shrink:0; }
         
         /* Teks Data Diri */
@@ -93,7 +102,7 @@
         }
         .btn-sertifikat { background: linear-gradient(90deg, #f8c471, #ff6f61); color: #0b1c4d; }
         .btn-leaderboard { background: rgba(255, 255, 255, 0.1); color: #fff; }
-        .btn-laporan { background: rgba(255, 255, 255, 0.1); color: #fff; } /* Gaya sama dengan leaderboard */
+        .btn-laporan { background: rgba(255, 255, 255, 0.1); color: #fff; } 
         .btn-action:hover { transform: translateY(-3px); background: #fff; color: #0b1c4d; }
 
         /* Kalender */
@@ -145,17 +154,17 @@
 
         <h3 class="gradient-text" style="margin-top:28px; font-size: 16px;">Materi Perencanaan dan Pengalamatan Jaringan</h3>
         <div class="materi-grid">
-            <a href="materi/materi.html" class="materi-item">
-                <div>Pengenalan Jaringan Komputer</div><div class="materi-icon">📘</div>
+            <a href="#" class="materi-item locked">
+                <div>Pengenalan Jaringan Komputer</div><div class="materi-icon"><i class="fa-solid fa-lock"></i></div>
             </a>
             <a href="materi/materi.html" class="materi-item">
                 <div>Perencanaan Topologi Jaringan</div><div class="materi-icon">🗺️</div>
             </a>
-            <a href="materi/materi.html" class="materi-item">
-                <div>IP Address dan Subnetting</div><div class="materi-icon">🌐</div>
+            <a href="#" class="materi-item locked">
+                <div>IP Address dan Subnetting</div><div class="materi-icon"><i class="fa-solid fa-lock"></i></div>
             </a>
-            <a href="materi/materi.html" class="materi-item">
-                <div>Perencanaan Alamat IP</div><div class="materi-icon">🧮</div>
+            <a href="#" class="materi-item locked">
+                <div>Perencanaan Alamat IP</div><div class="materi-icon"><i class="fa-solid fa-lock"></i></div>
             </a>
         </div>
     </div>
