@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin CMS | Panel Konten Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{background:linear-gradient(180deg,#1e2f8f,#0b1c4d); color:#fff; padding:20px; min-height:100vh; display: none;} 
+        
+        .cms-container{max-width:1000px; margin:40px auto; background:rgba(255,255,255,0.1); backdrop-filter:blur(15px); padding:30px; border-radius:24px; border:1px solid rgba(255,255,255,0.2); box-shadow:0 15px 35px rgba(0,0,0,0.3);}
+        .gradient-text{background: linear-gradient(90deg,#e93538,#ff6f61,#f8c471); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; font-size: 24px; margin-bottom: 25px; display: inline-block;}
+        
+        .section-title{color: #f8c471; font-size: 18px; margin: 30px 0 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+        .form-group{margin-bottom:15px;}
+        label{display:block; margin-bottom:5px; font-size:13px; opacity: 0.8;}
+        
+        input, select{width:100%; padding:12px; background: rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); border-radius:10px; color: #fff; outline: none;}
+        
+        select option { background: #1e2f8f; color: #fff; }
+        
+        #editor-container { background: white; color: black; border-radius: 10px; height: 350px; margin-bottom: 20px; font-size: 16px; }
+        .ql-toolbar { background: #f3f3f3; border-radius: 10px 10px 0 0; border: none !important; }
+        .ql-container { border: none !important; border-radius: 0 0 10px 10px; }
+
+        .ql-snow .ql-tooltip {
+            background-color: #ffffff !important;
+            color: #333 !important;
+            border: 1px solid #ccc !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important;
+            border-radius: 8px !important;
+            z-index: 9999;
+        }
+        .ql-snow .ql-tooltip input[type=text] {
+            color: #000 !important;
+            background: #fff !important;
+            border: 1px solid #ccc !important;
+        }
+        .ql-snow .ql-tooltip a.ql-action::after {
+            color: #4361ee !important;
+            font-weight: bold;
+        }
+
+        .kuis-box{background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-bottom: 20px; border-left: 4px solid #ff6f61;}
+        .grid-options{display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;}
+        .grid-options input { background: rgba(255,255,255,0.05); }
+
+        button#btnSimpan{background: linear-gradient(90deg,#4cc9f0,#4361ee); color:#fff; border:none; padding:18px; border-radius:35px; cursor:pointer; font-weight:600; width:100%; margin-top: 20px; font-size: 16px; transition: 0.3s;}
+        button#btnSimpan:hover{transform: scale(1.02); box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);}
+        
+        .materi-card{background:rgba(255,255,255,0.08); padding:15px; border-radius:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;}
+        .badge-urut { background: #f8c471; color: #000; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: bold; margin-right: 10px;}
+        .action-btns button { margin-left: 5px; padding: 8px 12px; border-radius: 8px; cursor: pointer; border: none; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="cms-container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 class="gradient-text"><i class="fa-solid fa-user-shield"></i> Panel Admin</h2>
+        <button onclick="window.location.href='dashboard.html'" style="background:rgba(255,0,0,0.6); color:white; border:none; padding:8px 20px; border-radius:20px; cursor:pointer;">Dashboard</button>
+    </div>
+    
+    <form id="masterForm">
+        <div class="section-title">1. Metadata & Judul</div>
+        <div class="form-group">
+            <label>Judul Materi</label>
+            <input type="text" id="judul" required placeholder="Contoh: Topologi Jaringan">
+        </div>
+
+        <div class="section-title">2. Isi Pelajaran (Rich Text Editor)</div>
+        <div id="editor-container"></div> 
+        
+        <div class="section-title">3. Media Tambahan</div>
+        <div class="form-group">
+            <label>Link Video YouTube / H5P (Opsional)</label>
+            <input type="text" id="media_link" placeholder="https://youtube.com/embed/...">
+        </div>
+
+        <div class="section-title">4. Uji Pemahaman (Kuis)</div>
+        <div id="soal-container"></div>
+
+        <button type="submit" id="btnSimpan">Publikasikan Sebagai <span id="label-urut">Materi...</span> <i class="fa-solid fa-paper-plane"></i></button>
+        <button type="button" id="btnBatalEdit" style="display:none; background:gray; color:white; border:none; padding:10px; border-radius:35px; width:100%; margin-top:10px; cursor:pointer;">Batal Edit</button>
+    </form>
+
+    <div class="section-title">Daftar Materi Terbit</div>
+    <div id="list-materi"></div>
+</div>
+
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script type="module">
+    import { db, auth } from "../js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { ref, set, onValue, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    var quill = new Quill('#editor-container', {
+        modules: {
+            toolbar: [
+                [{ header: [1, 2, 3, false] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link', 'image', 'video'],
+                ['clean']
+            ]
+        },
+        placeholder: 'Ketik materi di sini...',
+        theme: 'snow'
+    });
+
+    let materiCount = 0;
+    let currentEditingID = null;
+
+    // Render Input Kuis
+    const soalContainer = document.getElementById('soal-container');
+    for(let i=1; i<=5; i++){
+        soalContainer.innerHTML += `
+            <div class="kuis-box">
+                <label><strong>Soal ${i}</strong></label>
+                <input type="text" class="tanya" data-id="${i}" placeholder="Pertanyaan kuis...">
+                <div class="grid-options">
+                    <input type="text" class="optA" data-id="${i}" placeholder="Pilihan A">
+                    <input type="text" class="optB" data-id="${i}" placeholder="Pilihan B">
+                    <input type="text" class="optC" data-id="${i}" placeholder="Pilihan C">
+                    <input type="text" class="optD" data-id="${i}" placeholder="Pilihan D">
+                </div>
+                <label style="margin-top:10px;">Kunci Jawaban</label>
+                <select class="kunci" data-id="${i}">
+                    <option value="a">A</option><option value="b">B</option>
+                    <option value="c">C</option><option value="d">D</option>
+                </select>
+            </div>
+        `;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            const bioSnap = await get(ref(db, `users/${user.uid}/biodata`));
+            if (bioSnap.exists() && bioSnap.val().role === "admin") {
+                document.body.style.display = "block";
+                hitungMateri();
+            } else { window.location.href = "dashboard.html"; }
+        } else { window.location.href = "login.html"; }
+    });
+
+    async function hitungMateri() {
+        onValue(ref(db, 'materi'), (snap) => {
+            materiCount = snap.exists() ? Object.keys(snap.val()).length : 0;
+            if(!currentEditingID) {
+                document.getElementById('label-urut').innerText = "materi" + (materiCount + 1);
+            }
+        });
+    }
+
+    const form = document.getElementById('masterForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const materiID = currentEditingID || ("materi" + (materiCount + 1));
+        const judul = document.getElementById('judul').value;
+        const kontenHtml = quill.root.innerHTML;
+
+        let bankSoal = null;
+        const cekSoal1 = document.querySelector(`.tanya[data-id="1"]`).value;
+        
+        if(cekSoal1 !== ""){
+            bankSoal = {};
+            for(let i=1; i<=5; i++){
+                const q = document.querySelector(`.tanya[data-id="${i}"]`).value;
+                if(q !== ""){
+                    bankSoal[`kuis_${materiID}_${i}`] = {
+                        tanya: q, 
+                        a: document.querySelector(`.optA[data-id="${i}"]`).value,
+                        b: document.querySelector(`.optB[data-id="${i}"]`).value,
+                        c: document.querySelector(`.optC[data-id="${i}"]`).value,
+                        d: document.querySelector(`.optD[data-id="${i}"]`).value,
+                        kunci: document.querySelector(`.kunci[data-id="${i}"]`).value
+                    };
+                }
+            }
+        }
+
+        try {
+            const dataMateri = {
+                judul,
+                konten: kontenHtml,
+                media: document.getElementById('media_link').value,
+                hasKuis: (bankSoal !== null),
+                bank_soal: bankSoal,
+                timestamp: Date.now()
+            };
+
+            if(!currentEditingID) {
+                dataMateri.id_urut = materiCount + 1;
+            } else {
+                // Pertahankan id_urut yang lama jika sedang edit
+                const oldData = await get(ref(db, `materi/${currentEditingID}`));
+                dataMateri.id_urut = oldData.val().id_urut;
+            }
+
+            await set(ref(db, 'materi/' + materiID), dataMateri);
+            alert(currentEditingID ? "Materi Diperbarui!" : "Materi Terbit!");
+            resetForm();
+        } catch (err) { alert("Gagal: " + err.message); }
+    });
+
+    function resetForm() {
+        currentEditingID = null;
+        form.reset();
+        quill.setContents([]);
+        // Reset kolom kuis secara manual karena form.reset() terkadang tidak membersihkan select/input kuis dengan sempurna
+        document.querySelectorAll('.tanya, .optA, .optB, .optC, .optD').forEach(el => el.value = "");
+        document.querySelectorAll('.kunci').forEach(el => el.selectedIndex = 0);
+        
+        document.getElementById('btnSimpan').innerHTML = `Publikasikan Sebagai <span id="label-urut">materi${materiCount+1}</span> <i class="fa-solid fa-paper-plane"></i>`;
+        document.getElementById('btnBatalEdit').style.display = "none";
+        hitungMateri();
+    }
+
+    document.getElementById('btnBatalEdit').onclick = resetForm;
+
+    onValue(ref(db, 'materi'), (snap) => {
+        const listDiv = document.getElementById('list-materi');
+        listDiv.innerHTML = "";
+        snap.forEach(c => {
+            const data = c.val();
+            listDiv.innerHTML += `
+                <div class="materi-card">
+                    <div>
+                        <span class="badge-urut">MATERI ${data.id_urut || ''}</span>
+                        <span>${data.judul}</span>
+                    </div>
+                    <div class="action-btns">
+                        <button onclick="editMateri('${c.key}')" style="background:#4cc9f0;"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="hapusM('${c.key}')" style="background:rgba(255,0,0,0.5);"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+        });
+    });
+
+    window.editMateri = async (id) => {
+        const snap = await get(ref(db, `materi/${id}`));
+        if(snap.exists()){
+            const data = snap.val();
+            currentEditingID = id;
+            
+            // Isi Form Dasar
+            document.getElementById('judul').value = data.judul;
+            quill.root.innerHTML = data.konten;
+            document.getElementById('media_link').value = data.media || "";
+            
+            // ISI KUIS (Perbaikan: Reset kolom dulu baru diisi)
+            for(let i=1; i<=5; i++){
+                // Bersihkan field kuis terlebih dahulu
+                document.querySelector(`.tanya[data-id="${i}"]`).value = "";
+                document.querySelector(`.optA[data-id="${i}"]`).value = "";
+                document.querySelector(`.optB[data-id="${i}"]`).value = "";
+                document.querySelector(`.optC[data-id="${i}"]`).value = "";
+                document.querySelector(`.optD[data-id="${i}"]`).value = "";
+                document.querySelector(`.kunci[data-id="${i}"]`).value = "a";
+
+                // Isi jika data ada
+                const kuisKey = `kuis_${id}_${i}`;
+                if(data.bank_soal && data.bank_soal[kuisKey]){
+                    const s = data.bank_soal[kuisKey];
+                    document.querySelector(`.tanya[data-id="${i}"]`).value = s.tanya || "";
+                    document.querySelector(`.optA[data-id="${i}"]`).value = s.a || "";
+                    document.querySelector(`.optB[data-id="${i}"]`).value = s.b || "";
+                    document.querySelector(`.optC[data-id="${i}"]`).value = s.c || "";
+                    document.querySelector(`.optD[data-id="${i}"]`).value = s.d || "";
+                    document.querySelector(`.kunci[data-id="${i}"]`).value = s.kunci || "a";
+                }
+            }
+            
+            document.getElementById('btnSimpan').innerHTML = `Update ${id} <i class="fa-solid fa-save"></i>`;
+            document.getElementById('btnBatalEdit').style.display = "block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    window.hapusM = (id) => { 
+        if(confirm("Hapus materi ini?")) remove(ref(db, `materi/${id}`)); 
+    };
+</script>
+</body>
+</html>

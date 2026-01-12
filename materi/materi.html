@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Materi | PJTJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{background:linear-gradient(180deg,#1e2f8f,#0b1c4d); color:#fff; padding:20px; min-height:100vh; display:none;}
+        .container { width: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+        .gradient-text{ background: linear-gradient(90deg,#e93538,#ff6f61,#f8c471); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; font-size: clamp(24px, 4vw, 32px); }
+        .materi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; justify-content: center; }
+        .materi-card { background: rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 40px 30px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; cursor: pointer; text-decoration: none; color: white; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.2); position: relative; }
+        .materi-card:hover:not(.locked){ transform: translateY(-10px); border-color: #f8c471; }
+        .materi-card.locked { cursor: not-allowed; opacity: 0.5; filter: grayscale(1); }
+        .lock-icon { position: absolute; top: 15px; right: 15px; color: #f8c471; font-size: 18px; }
+        .icon-box { width: 80px; height: 80px; background: rgba(248, 196, 113, 0.1); border-radius: 22px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: #f8c471; font-size: 35px; border: 1px solid rgba(248, 196, 113, 0.2); }
+        .materi-card h3 { font-size: 18px; color: #fff; margin-bottom: 25px; font-weight: 600; min-height: 54px; display: flex; align-items: center; }
+        .id-badge { position: absolute; top: 20px; left: 20px; background: rgba(248, 196, 113, 0.2); padding: 5px 12px; border-radius: 10px; font-size: 11px; color: #f8c471; font-weight: 700; }
+        .badge-status { width: 100%; padding: 10px; border-radius: 14px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .has-kuis { background: linear-gradient(90deg,#ff6f61,#e93538); box-shadow: 0 4px 15px rgba(233, 53, 56, 0.3); }
+        .no-kuis { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-back { background: rgba(255,255,255,0.1); color: #fff; text-decoration: none; padding: 10px 22px; border-radius: 15px; font-size: 14px; font-weight: 500; border: 1px solid rgba(255,255,255,0.2); transition: 0.3s; display: flex; align-items: center; gap: 10px; }
+        .btn-back:hover { background: #e93538; border-color: transparent; transform: scale(1.05); }
+        @media (max-width: 600px) { .header-section { flex-direction: column; text-align: center; gap: 20px; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header class="header-section">
+        <div>
+            <h2 class="gradient-text">Modul Pembelajaran</h2>
+            <p style="opacity: 0.6; font-size: 14px; margin-top: 5px;">Akses materi TJKT secara sistematis.</p>
+        </div>
+        <a href="../dashboard.html" class="btn-back"><i class="fa-solid fa-house"></i> Dashboard</a>
+    </header>
+
+    <div id="materi-list" class="materi-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 100px;">
+            <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 40px; color: #f8c471;"></i>
+            <p style="margin-top: 20px; opacity: 0.7;">Memuat kurikulum materi...</p>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { db, auth } from "../js/firebase-config.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const listDiv = document.getElementById('materi-list');
+
+    onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            document.body.style.display = "block";
+            try {
+                const [bioSnap, progresSnap] = await Promise.all([
+                    get(ref(db, `users/${user.uid}/biodata`)),
+                    get(ref(db, `users/${user.uid}/progres`))
+                ]);
+
+                const isAdmin = bioSnap.exists() && bioSnap.val().role === "admin";
+                const progres = progresSnap.exists() ? progresSnap.val() : {};
+
+                muatMateri(isAdmin, progres);
+            } catch (err) {
+                console.error(err);
+                muatMateri(false, {}); 
+            }
+        } else {
+            window.location.href = "../login.html";
+        }
+    });
+
+    function muatMateri(isAdmin, progres) {
+        onValue(ref(db, 'materi'), (snap) => {
+            if(!snap.exists()){
+                listDiv.innerHTML = "<div style='grid-column: 1/-1; text-align: center; padding: 50px; opacity: 0.5;'><h3>Belum ada materi.</h3></div>";
+                return;
+            }
+
+            let materiArray = [];
+            snap.forEach(c => { materiArray.push({ key: c.key, ...c.val() }); });
+
+            materiArray.sort((a, b) => (parseInt(a.id_urut) || 0) - (parseInt(b.id_urut) || 0));
+
+            listDiv.innerHTML = ""; 
+            materiArray.forEach((item, index) => {
+                let isLocked = false;
+                
+                // Logika: Kunci materi jika materi sebelumnya belum LULUS
+                if (!isAdmin && index > 0) {
+                    const materiSebelumnyaKey = materiArray[index - 1].key;
+                    // Cek progres materi sebelumnya (menggunakan .lulus)
+                    if (!progres[materiSebelumnyaKey] || progres[materiSebelumnyaKey].lulus !== true) {
+                        isLocked = true;
+                    }
+                }
+
+                if (isLocked) {
+                    listDiv.innerHTML += `
+                        <div class="materi-card locked">
+                            <div class="id-badge">Indikator ${item.id_urut || '0'}</div>
+                            <div class="lock-icon"><i class="fa-solid fa-lock"></i></div>
+                            <div class="icon-box"><i class="fa-solid fa-book-open"></i></div>
+                            <h3>${item.judul}</h3>
+                            <div class="badge-status no-kuis">Selesaikan Materi ${materiArray[index-1].id_urut} dahulu</div>
+                        </div>`;
+                } else {
+                    listDiv.innerHTML += `
+                        <a href="baca-materi.html?id=${item.key}" class="materi-card">
+                            <div class="id-badge">Indikator ${item.id_urut || '0'}</div>
+                            ${isAdmin ? '<div class="lock-icon" title="Mode Admin"><i class="fa-solid fa-user-shield"></i></div>' : ''}
+                            <div class="icon-box"><i class="fa-solid fa-book-open"></i></div>
+                            <h3>${item.judul}</h3>
+                            <div class="badge-status ${item.hasKuis ? 'has-kuis' : 'no-kuis'}">
+                                ${item.hasKuis ? '<i class="fa-solid fa-star"></i> Materi + Kuis' : '<i class="fa-solid fa-file-lines"></i> Materi Saja'}
+                            </div>
+                        </a>`;
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

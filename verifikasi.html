@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Email | Media Pembelajaran</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{min-height:100vh;background:linear-gradient(180deg,#1e2f8f,#0b1c4d);display:flex;justify-content:center;align-items:center;padding:16px;color:#fff;text-align:center;}
+        
+        .verify-box{width:100%;max-width:400px;background:rgba(255,255,255,0.15);backdrop-filter:blur(14px);border-radius:24px;padding:40px 25px;box-shadow:0 15px 35px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,0.2);}
+        
+        .icon-wrapper{width:80px;height:80px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:40px;color:#ff7a6b;animation: pulse 2s infinite;}
+        
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        h2{font-size:22px;margin-bottom:10px;font-weight:700;}
+        p{font-size:14px;color:#e6e9ff;line-height:1.6;margin-bottom:20px;}
+        
+        .info-card{background:rgba(0,0,0,0.2);padding:15px;border-radius:15px;text-align:left;margin-bottom:25px;border-left:4px solid #ff7a6b;}
+        .info-card ul{list-style:none;font-size:13px;}
+        .info-card li{margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;}
+        .info-card i{margin-top:3px;color:#ff7a6b;}
+
+        .btn-login{display:inline-block;width:100%;padding:12px;background:linear-gradient(90deg,#e63946,#ff7a6b);color:#fff;text-decoration:none;border-radius:25px;font-weight:600;font-size:14px;transition:0.3s;box-shadow:0 8px 15px rgba(230,57,70,0.3);}
+        .btn-login:hover{transform:translateY(-3px);box-shadow:0 12px 20px rgba(230,57,70,0.5);}
+    </style>
+</head>
+<body>
+
+<div class="verify-box">
+    <div class="icon-wrapper">
+        <i class="fa-solid fa-envelope-circle-check"></i>
+    </div>
+    
+    <h2>Satu Langkah Lagi!</h2>
+    <p>Terima kasih telah mendaftar. Kami telah mengirimkan link verifikasi ke alamat email Anda.</p>
+    
+    <div class="info-card">
+        <ul>
+            <li><i class="fa-solid fa-circle-info"></i> Silakan buka email Anda dan klik tombol verifikasi agar akun aktif.</li>
+            <li><i class="fa-solid fa-triangle-exclamation"></i> Tidak menemukan email ? Cek folder Spam atau Promosi.</li>
+            <li><i class="fa-solid fa-clock"></i> Tunggu 1-5 menit jika email belum masuk.</li>
+        </ul>
+    </div>
+
+    <a href="login.html" class="btn-login">Sudah Verifikasi? Masuk Sekarang</a>
+</div>
+
+</body>
+</html>

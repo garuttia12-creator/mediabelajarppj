@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | Media Pembelajaran</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* CSS Kamu (Tetap Sama) */
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{min-height:100vh;background:linear-gradient(180deg,#1e2f8f,#0b1c4d);display:flex;justify-content:center;align-items:center;color:#fff;padding:16px;}
+        .login-box{width:100%;max-width:340px;padding:25px 20px;background:rgba(255,255,255,0.15);backdrop-filter:blur(14px);border-radius:18px;border:1px solid rgba(255,255,255,0.3);box-shadow:0 14px 30px rgba(0,0,0,0.35);text-align:center;}
+        .login-box img{width:52px;margin-bottom:8px;}
+        .login-box h2{font-size:21px;margin-bottom:4px;}
+        .login-box p{font-size:13px;color:#e6e9ff;margin-bottom:12px;}
+        .input-group{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.18);padding:10px 14px;border-radius:22px;margin-bottom:10px;position: relative;}
+        .input-group input{width:100%;border:none;outline:none;background:transparent;color:#fff;font-size:13px;padding-right:25px;}
+        .input-group input::placeholder{color:#e6e9ff;}
+        .toggle-password {position: absolute; right: 15px; cursor: pointer; color: #e6e9ff; z-index: 10;}
+        .login-btn{width:100%;padding:10px;margin-top:8px;border:none;border-radius:22px;background:linear-gradient(90deg,#e63946,#ff7a6b);color:#fff;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(230,57,70,0.45);transition:0.3s;}
+        .login-btn:disabled{background: #888; cursor: not-allowed;}
+        .login-footer{margin-top:14px;font-size:11.5px;}
+        .login-footer a{color:#fff;font-weight:600;text-decoration:none; margin: 5px; display: inline-block;}
+        #errorMsg {color: #ffbcbc; font-size: 11px; margin-bottom: 10px; display: none;}
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <img src="img/logo-smkn9.png" alt="Logo">
+    <h2>Login</h2>
+    <p>Silakan masuk untuk mulai belajar</p>
+
+    <div id="errorMsg"></div>
+
+    <form id="loginForm">
+        <div class="input-group">
+            <span><i class="fa-solid fa-envelope"></i></span>
+            <input type="email" id="email" placeholder="Email Terdaftar" required>
+        </div>
+
+        <div class="input-group">
+            <span><i class="fa-solid fa-lock"></i></span>
+            <input type="password" id="password" placeholder="Password" required>
+            <i class="fa-solid fa-eye toggle-password" id="eyeIcon"></i>
+        </div>
+
+        <button class="login-btn" type="submit" id="btnLogin">Masuk</button>
+    </form>
+
+    <div class="login-footer">
+        <a href="#" id="forgotPass">Lupa Password?</a><br>
+        Belum punya akun? <a href="daftar.html">Daftar</a>
+    </div>
+</div>
+
+<script type="module">
+    import { auth, db } from "./js/firebase-config.js";
+    import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const errorMsg = document.getElementById('errorMsg');
+    const btnLogin = document.getElementById('btnLogin');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.emailVerified) {
+            window.location.replace("dashboard.html");
+        }
+    });
+
+    if (eyeIcon) {
+        eyeIcon.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorMsg.style.display = 'none';
+        btnLogin.disabled = true;
+        btnLogin.innerText = "Mengecek...";
+
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+            const user = userCredential.user;
+
+            if (!user.emailVerified) {
+                errorMsg.innerText = "Email belum diverifikasi!";
+                errorMsg.style.display = 'block';
+                await signOut(auth);
+                btnLogin.disabled = false;
+                btnLogin.innerText = "Masuk";
+                return;
+            }
+
+            // AMBIL DATA & SIMPAN AKTIFITAS
+            const userRef = ref(db, `users/${user.uid}/biodata`);
+            const snapshot = await get(userRef);
+            
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+
+                // Simpan data login ke folder aktifitas
+                await update(ref(db, `users/${user.uid}/aktifitas`), {
+                    terakhir_login: new Date().toLocaleString('id-ID'),
+                    perangkat: navigator.userAgent,
+                    platform: navigator.platform
+                });
+
+                localStorage.setItem("userRole", userData.role);
+
+                // Otorisasi Admin
+                if(userData.role === 'admin') {
+                    window.location.href = "admin/dashboard.html"; // Arahkan ke folder admin jika ada
+                } else {
+                    window.location.href = "dashboard.html";
+                }
+            }
+        } catch (error) {
+            errorMsg.innerText = "Email atau Password salah!";
+            errorMsg.style.display = 'block';
+            btnLogin.disabled = false;
+            btnLogin.innerText = "Masuk";
+        }
+    });
+</script>
+</body>
+</html>

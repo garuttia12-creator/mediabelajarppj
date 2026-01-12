@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Daftar Akun | Media Pembelajaran</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        /* ============ RESET & BASE ============ */
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{min-height:100vh;background:linear-gradient(180deg,#1e2f8f,#0b1c4d);display:flex;justify-content:center;align-items:center;padding:16px;color:#fff;}
+        
+        .register-box{width:100%;max-width:340px;background:rgba(255,255,255,0.15);backdrop-filter:blur(14px);border-radius:18px;padding:20px 18px;box-shadow:0 12px 26px rgba(0,0,0,.35);text-align:center;border: 1px solid rgba(255,255,255,0.2);}
+        .register-box img{width:46px;margin-bottom:6px;}
+        .register-box h2{font-size:19px;margin-bottom:2px;}
+        .register-box p{font-size:12px;color:#e6e9ff;margin-bottom:12px;}
+        
+        /* Input Group */
+        .input-group{display:flex;align-items:center;background:rgba(255,255,255,0.18);padding:10px 14px;border-radius:22px;margin-bottom:10px;position: relative;}
+        .input-group input, .input-group select{width:100%;border:none;outline:none;background:transparent;color:#fff;font-size:12.5px;padding-right: 35px;}
+        .input-group select option{color:#000;background:#fff;}
+        
+        /* Styling Ikon Mata (FIXED POSITION) */
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 14px;
+            color: #e6e9ff;
+            z-index: 10;
+        }
+        
+        /* Validasi Password Text */
+        .pass-hint {font-size: 10px; color: #ffbcbc; text-align: left; margin: -5px 0 10px 10px; line-height: 1.2; display: none;}
+
+        .checkbox{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;margin:10px 0;text-align:left;}
+        
+        button{width:100%;padding:12px;border:none;border-radius:25px;background:linear-gradient(90deg,#e63946,#ff7a6b);color:#fff;font-size:13.5px;font-weight:600;cursor:pointer;box-shadow:0 8px 20px rgba(230,57,70,.45);transition: 0.3s; margin-top: 5px;}
+        button:disabled {background: #888; cursor: not-allowed; box-shadow: none; transform: none;}
+        button:hover:not(:disabled){transform:translateY(-2px);}
+        
+        .footer{margin-top:12px;font-size:11.5px;}
+        .footer a{color:#fff;font-weight:600;text-decoration:none;}
+    </style>
+</head>
+<body>
+
+<div class="register-box">
+    <img src="img/logo-smkn9.png" alt="Logo">
+    <h2>Daftar Akun</h2>
+    <p>Lengkapi data dengan benar</p>
+
+    <form id="regForm">
+        <div class="input-group">
+            <input type="text" id="namaLengkap" placeholder="Nama Lengkap" required>
+        </div>
+
+        <div class="input-group">
+            <input type="email" id="email" placeholder="Email Aktif" required>
+        </div>
+
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password Baru" required>
+            <i class="fa-solid fa-eye toggle-password" id="eyeIcon"></i>
+        </div>
+        <div id="passHint" class="pass-hint">
+            *Wajib: Min. 8 Karakter, Huruf Besar, Angka, & Simbol (@$!%*?&).
+        </div>
+
+        <div class="input-group">
+            <select id="role" required>
+                <option value="">Pilih Peran Akun</option>
+                <option value="siswa">Siswa</option>
+                <option value="guru">Guru</option>
+                <option value="pengunjung">Pengunjung</option>
+            </select>
+        </div>
+
+        <div id="extraFields"></div>
+
+        <div class="checkbox">
+            <input type="checkbox" id="agree" required>
+            <label for="agree">Saya setuju dengan aturan pembelajaran</label>
+        </div>
+
+        <button type="submit" id="btnDaftar">Daftar Sekarang</button>
+    </form>
+
+    <div class="footer">Sudah punya akun? <a href="login.html">Login</a></div>
+</div>
+
+<script type="module">
+    import { auth, db } from "./js/firebase-config.js";
+    import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { ref, set, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const roleSelect = document.getElementById('role');
+    const extraFields = document.getElementById('extraFields');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    const passHint = document.getElementById('passHint');
+
+    // 1. Fitur Intip Password (Ikon Mata) - RE-FIXED
+    if (eyeIcon) {
+        eyeIcon.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // 2. Validasi Hint Password
+    passwordInput.addEventListener('input', () => {
+        const pass = passwordInput.value;
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (pass.length > 0 && !regex.test(pass)) {
+            passHint.style.display = 'block';
+            passwordInput.style.color = '#ff7a6b';
+        } else {
+            passHint.style.display = 'none';
+            passwordInput.style.color = '#fff';
+        }
+    });
+
+    // 3. Form Dinamis Siswa/Guru
+    roleSelect.addEventListener('change', () => {
+        const role = roleSelect.value;
+        extraFields.innerHTML = '';
+        if (role === 'siswa') {
+            extraFields.innerHTML = `
+                <div class="input-group"><input type="text" id="nisn" placeholder="NISN (10 Digit)" required></div>
+                <div class="input-group"><input type="text" id="sekolah" placeholder="Nama Sekolah" required></div>
+                <div class="input-group"><input type="text" id="kelas" placeholder="Kelas" required></div>
+            `;
+        } else if (role === 'guru') {
+            extraFields.innerHTML = `
+                <div class="input-group"><input type="text" id="nip" placeholder="NIP/NIDN" required></div>
+                <div class="input-group"><input type="text" id="instansi" placeholder="Unit Kerja / Instansi" required></div>
+            `;
+        }
+    });
+
+    // 4. Proses Pendaftaran ke Firebase
+    document.getElementById('regForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btn = document.getElementById('btnDaftar');
+        const email = document.getElementById('email').value;
+        const pass = passwordInput.value;
+        const role = roleSelect.value;
+
+        // Validasi Password Final
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!regex.test(pass)) {
+            alert("Password belum memenuhi syarat keamanan!");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Mendaftarkan...";
+
+        try {
+            // A. Buat User di Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = userCredential.user;
+
+            // B. Transaksi Nomor Urut (Agar tidak duplikat)
+            const statsRef = ref(db, 'system/stats/totalUsers');
+            let noUrutFinal = 0;
+            await runTransaction(statsRef, (currentValue) => {
+                noUrutFinal = (currentValue || 0) + 1;
+                return noUrutFinal;
+            });
+
+            // C. Siapkan Data Biodata
+            let biodata = {
+                no_urut: noUrutFinal,
+                nama: document.getElementById('namaLengkap').value,
+                email: email,
+                role: role,
+                created_at: new Date().toISOString()
+            };
+
+            if (role === 'siswa') {
+                biodata.nisn = document.getElementById('nisn').value;
+                biodata.sekolah = document.getElementById('sekolah').value;
+                biodata.kelas = document.getElementById('kelas').value;
+            } else if (role === 'guru') {
+                biodata.nip = document.getElementById('nip').value;
+                biodata.instansi = document.getElementById('instansi').value;
+            }
+
+            // D. Simpan ke Database (Path: users/UID/biodata)
+            await set(ref(db, 'users/' + user.uid + '/biodata'), biodata);
+            
+            // E. Verifikasi Email & Logout Otomatis (Supaya mereka login manual nanti)
+            await sendEmailVerification(user);
+            alert("Pendaftaran Berhasil! Silakan cek email kamu untuk verifikasi sebelum login.");
+            
+            await signOut(auth);
+            window.location.href = "verifikasi.html";
+
+        } catch (error) {
+            console.error(error);
+            alert("Gagal Daftar: " + error.message);
+            btn.disabled = false;
+            btn.innerText = "Daftar Sekarang";
+        }
+    });
+</script>
+</body>
+</html>

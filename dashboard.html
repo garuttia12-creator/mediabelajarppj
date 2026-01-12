@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | PJTJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        /* ============ RESET & BASE RESPONSIVE ============ */
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{min-height:100vh;background:linear-gradient(180deg,#1e2f8f,#0b1c4d);color:#fff;overflow-x:hidden;}
+        
+        /* Navbar Dinamis */
+        .navbar{ position:fixed; width:100%; top:0; background:rgba(255,255,255,0.1); backdrop-filter:blur(10px); z-index:1000; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.2); }
+        .nav-container{ max-width:1200px; margin:auto; display:flex; justify-content:space-between; align-items:center; padding:0 20px; }
+        .brand{ display:flex; align-items:center; gap:10px; }
+        .logo{ width: clamp(35px, 10vw, 45px); }
+        .brand-text h1{ font-size: clamp(14px, 4vw, 18px); }
+        .brand-text span{ font-size: clamp(10px, 3vw, 12px); opacity:0.8; }
+        
+        nav ul{ display:flex; list-style:none; gap:15px; align-items: center; }
+        nav a{ color:#fff; text-decoration:none; font-size: clamp(12px, 3vw, 14px); font-weight:500; transition: 0.3s; }
+        nav a.active{ color:#ff6f61; }
+        nav a:hover{ opacity: 0.8; }
+
+        /* Style Khusus Tombol Admin */
+        .btn-admin {
+            background: #f8c471;
+            color: #0b1c4d !important;
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 700 !important;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(248, 196, 113, 0.3);
+        }
+        .btn-admin:hover { transform: scale(1.05); background: #fff; }
+
+        .gradient-text{ background: linear-gradient(90deg,#e93538,#ff6f61,#f8c471); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; font-size: clamp(18px, 5vw, 24px); }
+        
+        /* Container Grid Dinamis */
+        .dashboard-container{ 
+            max-width:1200px; 
+            margin:auto; 
+            padding: 100px 20px 40px; 
+            display:grid; 
+            grid-template-columns: 3fr 1.2fr; 
+            gap:25px; 
+        }
+
+        .card{ background:rgba(255,255,255,0.15); backdrop-filter:blur(10px); border-radius:20px; padding: clamp(18px, 4vw, 26px); border:1px solid rgba(255,255,255,0.3); box-shadow:0 4px 20px rgba(0,0,0,0.2); margin-top:15px; }
+        
+        /* Materi Grid Dinamis */
+        .materi-grid{ margin-top:20px; display:grid; grid-template-columns:repeat(2, 1fr); gap:15px; }
+        .materi-item{ 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            padding:20px; 
+            border-radius:18px; 
+            background:rgba(255,255,255,0.15); 
+            border:1px solid rgba(255,255,255,0.3); 
+            cursor:pointer; 
+            text-decoration: none; 
+            color: white; 
+            transition:.3s; 
+            font-size: clamp(12px, 3vw, 14px); 
+        }
+        .materi-item:hover{ transform:translateY(-5px); background:rgba(255,255,255,0.25); border-color: #f8c471; }
+        .materi-icon{ width:45px; height:45px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.25); font-size:20px; flex-shrink:0; }
+        
+        /* Teks Data Diri */
+        .card p { display:flex; flex-wrap: wrap; align-items:flex-start; gap:8px; margin-bottom:12px; font-size: clamp(12px, 3.5vw, 14px); word-break: break-all; }
+        .card p strong{ width:75px; flex-shrink:0; font-weight:600; color: #f8c471; }
+        .card p span { flex: 1; min-width: 120px; }
+
+        /* Tombol Aksi Baru */
+        .action-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .btn-action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-sertifikat { background: linear-gradient(90deg, #f8c471, #ff6f61); color: #0b1c4d; }
+        .btn-leaderboard { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .btn-action:hover { transform: translateY(-3px); background: #fff; color: #0b1c4d; }
+
+        /* Kalender */
+        .calendar table{ width:100%; border-collapse:collapse; text-align:center; margin-top:10px; }
+        .calendar th{ font-size: 11px; padding-bottom: 8px; opacity: 0.7; }
+        .calendar td{ padding: 6px; font-size: 12px; }
+        .today{ background:#e93538; border-radius:50%; font-weight:700; color: white; }
+
+        /* Responsivitas */
+        @media(max-width:950px){ 
+            .dashboard-container{ grid-template-columns: 1fr; padding-top: 90px; } 
+            .materi-grid{ grid-template-columns: 1fr; } 
+        }
+        @media(max-width:480px){
+            .nav-container{ padding: 0 15px; }
+            .card { padding: 15px; }
+            nav ul { gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="nav-container">
+        <div class="brand">
+            <img src="img/logo-smkn9.png" class="logo">
+            <div class="brand-text">
+                <h1>SMKN 9 Garut</h1>
+                <span>Media Pembelajaran TJKT</span>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li id="admin-link"></li> 
+                <li><a href="#" id="btnLogout">Logout</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div class="dashboard-container">
+    <div>
+        <h2 class="gradient-text">Dashboard</h2>
+        <div class="card welcome">
+            <h2 id="sapaan" style="font-size: clamp(18px, 5vw, 22px);">Memuat Nama...</h2>
+            <p>Tetap semangat belajar hari ini 🌟</p>
+        </div>
+
+        <h3 class="gradient-text" style="margin-top:28px; font-size: 16px;">Materi Perencanaan dan Pengalamatan Jaringan</h3>
+        <div class="materi-grid">
+            <a href="materi/materi.html" class="materi-item">
+                <div>Pengenalan Jaringan Komputer</div><div class="materi-icon">📘</div>
+            </a>
+            <a href="materi/materi.html" class="materi-item">
+                <div>Perencanaan Topologi Jaringan</div><div class="materi-icon">🗺️</div>
+            </a>
+            <a href="materi/materi.html" class="materi-item">
+                <div>IP Address dan Subnetting</div><div class="materi-icon">🌐</div>
+            </a>
+            <a href="materi/materi.html" class="materi-item">
+                <div>Perencanaan Alamat IP</div><div class="materi-icon">🧮</div>
+            </a>
+        </div>
+    </div>
+
+    <div>
+        <h3 class="gradient-text" style="font-size: 16px;">Data Diri</h3>
+        <div class="card">
+            <div id="profile-container">
+                <p>Memuat data diri...</p>
+            </div>
+            
+            <div class="action-buttons">
+                <a href="output/sertifikat.html" class="btn-action btn-sertifikat">
+                    <i class="fa-solid fa-certificate"></i> Lihat Sertifikat
+                </a>
+                <a href="output/leaderboard.html" class="btn-action btn-leaderboard">
+                    <i class="fa-solid fa-ranking-star"></i> Lihat Leaderboard
+                </a>
+            </div>
+        </div>
+
+        <h3 class="gradient-text" style="margin-top:24px; font-size: 16px;">Kalender</h3>
+        <div class="card calendar">
+            <div class="calendar-header" style="display:flex; justify-content:space-between; margin-bottom:10px; gap: 5px;">
+                <select id="bulan" style="background:#0b1c4d; color:white; border:1px solid rgba(255,255,255,0.3); border-radius:5px; padding: 4px; font-size: 11px; flex: 1;"></select>
+                <select id="tahun" style="background:#0b1c4d; color:white; border:1px solid rgba(255,255,255,0.3); border-radius:5px; padding: 4px; font-size: 11px; flex: 1;"></select>
+            </div>
+            <table>
+                <thead><tr><th>Min</th><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th></tr></thead>
+                <tbody id="calendar-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { auth, db } from "./js/firebase-config.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            if(user.emailVerified) { loadProfile(user.uid); } 
+            else { window.location.href = "login.html"; }
+        } else { window.location.href = "login.html"; }
+    });
+
+    document.getElementById('btnLogout').addEventListener('click', (e) => {
+        e.preventDefault();
+        if(confirm("Apakah Anda yakin ingin keluar?")) {
+            signOut(auth).then(() => {
+                localStorage.clear();
+                window.location.href = "login.html";
+            });
+        }
+    });
+
+    async function loadProfile(uid) {
+        try {
+            const snapshot = await get(ref(db, `users/${uid}/biodata`));
+            const profileContainer = document.getElementById("profile-container");
+            const adminLinkContainer = document.getElementById("admin-link");
+            
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const role = (data.role || "siswa").toLowerCase().trim();
+                document.getElementById("sapaan").innerText = `Selamat Datang, ${data.nama || 'User'}!`;
+
+                if (role === "admin") {
+                    adminLinkContainer.innerHTML = `<a href="admin/admin-cms.html" class="btn-admin"><i class="fa-solid fa-user-shield"></i> Admin</a>`;
+                }
+
+                let htmlProfile = `<p><strong>Nama</strong><span>: ${data.nama || '-'}</span></p><p><strong>Email</strong><span>: ${data.email || '-'}</span></p>`;
+                if (role === "siswa") {
+                    htmlProfile += `<p><strong>NISN</strong><span>: ${data.nisn || '-'}</span></p><p><strong>Kelas</strong><span>: ${data.kelas || '-'}</span></p>`;
+                } else {
+                    htmlProfile += `<p><strong>NIP</strong><span>: ${data.nip || '-'}</span></p><p><strong>Instansi</strong><span>: ${data.instansi || '-'}</span></p>`;
+                }
+                htmlProfile += `<p><strong>Status</strong><span>: ${role.toUpperCase()}</span></p>`;
+                profileContainer.innerHTML = htmlProfile;
+            }
+        } catch (e) { console.error("Gagal memuat profil:", e); }
+    }
+</script>
+
+<script>
+    const bulanSelect=document.getElementById("bulan");
+    const tahunSelect=document.getElementById("tahun");
+    const body=document.getElementById("calendar-body");
+    const namaBulan=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+    const now=new Date();
+
+    namaBulan.forEach((b,i)=>bulanSelect.innerHTML+=`<option value="${i}">${b}</option>`);
+    for(let y=2024;y<=2030;y++)tahunSelect.innerHTML+=`<option value="${y}">${y}</option>`;
+    bulanSelect.value=now.getMonth(); tahunSelect.value=now.getFullYear();
+
+    function renderCalendar(){
+        body.innerHTML="";
+        const m=+bulanSelect.value; const y=+tahunSelect.value;
+        const first=new Date(y,m,1).getDay(); const days=new Date(y,m+1,0).getDate();
+        let d=1;
+        for(let i=0;i<6;i++){
+            const row=document.createElement("tr");
+            for(let j=0;j<7;j++){
+                const cell=document.createElement("td");
+                if(i===0 && j<first || d>days){cell.innerHTML="";}
+                else{
+                    cell.innerText=d;
+                    if(d===now.getDate() && m===now.getMonth() && y===now.getFullYear()) cell.classList.add("today");
+                    d++;
+                }
+                row.appendChild(cell);
+            }
+            body.appendChild(row);
+        }
+    }
+    bulanSelect.onchange=renderCalendar; tahunSelect.onchange=renderCalendar; renderCalendar();
+</script>
+</body>
+</html>

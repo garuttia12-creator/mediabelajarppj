@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baca Materi | PJTJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+        body{background:linear-gradient(180deg,#1e2f8f,#0b1c4d); color:#fff; padding:20px; min-height:100vh;}
+        .reader-container{max-width:900px; margin:40px auto; background:rgba(255,255,255,0.05); backdrop-filter:blur(15px); padding:40px; border-radius:30px; border:1px solid rgba(255,255,255,0.1); box-shadow: 0 15px 35px rgba(0,0,0,0.3);}
+        .gradient-text{background: linear-gradient(90deg,#e93538,#ff6f61,#f8c471); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:700; font-size: 32px; line-height: 1.2;}
+        .isi-konten{font-size: 16px; line-height: 1.8; color: #e0e0e0; margin: 30px 0; white-space: pre-wrap;}
+        .isi-konten iframe { width: 100%; border-radius: 15px; margin: 20px 0; aspect-ratio: 16/9; }
+        .kuis-section{margin-top: 50px; border-top: 2px dashed rgba(255,255,255,0.2); padding-top: 30px; display: none;}
+        .kuis-box{background: rgba(0,0,0,0.2); padding: 25px; border-radius: 20px; margin-bottom: 20px; border-left: 5px solid #ff6f61;}
+        .options-grid{display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 15px;}
+        .option-item{background: rgba(255,255,255,0.1); padding: 12px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; border: 1px solid transparent;}
+        .option-item:hover{background: rgba(255,255,255,0.2); border-color: #f8c471;}
+        
+        /* Style untuk input yang didisable */
+        input[type="radio"]:disabled { cursor: not-allowed; filter: grayscale(1); }
+        .option-item:has(input:disabled) { cursor: not-allowed; opacity: 0.7; }
+        .option-item:has(input:disabled):hover { background: rgba(255,255,255,0.1); border-color: transparent; }
+
+        button#btnKirimKuis{background: linear-gradient(90deg,#4cc9f0,#4361ee); color:#fff; border:none; padding:18px; border-radius:35px; cursor:pointer; font-weight:600; width:100%; font-size: 16px; margin-top: 20px; transition: 0.3s;}
+        button#btnKirimKuis:hover{transform: scale(1.02); box-shadow: 0 5px 20px rgba(67,97,238,0.4);}
+        
+        /* Style khusus tombol lulus */
+        button.lulus-style { background: linear-gradient(90deg, #27ae60, #2ecc71) !important; cursor: pointer !important; }
+
+        .btn-back{color: #f8c471; text-decoration: none; font-size: 14px; margin-bottom: 20px; display: inline-block;}
+    </style>
+</head>
+<body>
+
+<div class="reader-container">
+    <a href="materi.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Kembali ke Katalog</a>
+    <h1 id="judul-materi" class="gradient-text">Memuat Materi...</h1>
+    <div id="isi-konten" class="isi-konten">Mengambil isi pelajaran...</div>
+
+    <div id="kuis-area" class="kuis-section">
+        <h2 style="color: #f8c471; margin-bottom: 20px;"><i class="fa-solid fa-pen-to-square"></i> Uji Pemahaman</h2>
+        <form id="quizForm">
+            <div id="soal-list"></div>
+            <button type="submit" id="btnKirimKuis">Kirim Jawaban & Selesai <i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+    </div>
+</div>
+
+<script type="module">
+    import { db, auth } from "../js/firebase-config.js";
+    import { ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    let waktuMulai; 
+    let statusLulusUser = false; // Flag untuk keamanan
+
+    if(!id) window.location.href = "materi.html";
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = "../login.html";
+        } else {
+            checkStatusAndLoad(user.uid);
+        }
+    });
+
+    async function checkStatusAndLoad(uid) {
+        const progSnap = await get(ref(db, `users/${uid}/progres/${id}`));
+        statusLulusUser = progSnap.exists() && progSnap.val().lulus === true;
+
+        await loadMateri();
+
+        if (statusLulusUser) {
+            const btn = document.getElementById('btnKirimKuis');
+            // Ubah tombol menjadi link navigasi
+            btn.type = "button"; 
+            btn.classList.add('lulus-style');
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk melanjutkan materi';
+            btn.onclick = () => window.location.href = "materi.html";
+
+            // Kunci semua pilihan agar tidak bisa diklik
+            document.querySelectorAll('input[type="radio"]').forEach(input => {
+                input.disabled = true;
+            });
+        }
+    }
+
+    async function loadMateri() {
+        const snap = await get(ref(db, `materi/${id}`));
+        if(snap.exists()){
+            const data = snap.val();
+            document.getElementById('judul-materi').innerText = data.judul;
+            document.getElementById('isi-konten').innerHTML = data.konten;
+            if(data.hasKuis && data.bank_soal){
+                waktuMulai = Date.now(); 
+                renderKuis(data.bank_soal);
+                document.getElementById('kuis-area').style.display = "block";
+            }
+        }
+    }
+
+    function renderKuis(bankSoal) {
+        const container = document.getElementById('soal-list');
+        container.innerHTML = "";
+        Object.keys(bankSoal).forEach((key, index) => {
+            const s = bankSoal[key];
+            container.innerHTML += `
+                <div class="kuis-box">
+                    <p><strong>${index + 1}. ${s.tanya}</strong></p>
+                    <div class="options-grid">
+                        <label class="option-item"><input type="radio" name="${key}" value="a" required> A. ${s.a}</label>
+                        <label class="option-item"><input type="radio" name="${key}" value="b"> B. ${s.b}</label>
+                        <label class="option-item"><input type="radio" name="${key}" value="c"> C. ${s.c}</label>
+                        <label class="option-item"><input type="radio" name="${key}" value="d"> D. ${s.d}</label>
+                    </div>
+                </div>`;
+        });
+    }
+
+    document.getElementById('quizForm').onsubmit = async (e) => {
+        e.preventDefault();
+
+        // PROTEKSI TAMBAHAN: Jika status sudah lulus, jangan jalankan submit apapun
+        if(statusLulusUser) {
+            window.location.href = "materi.html";
+            return;
+        }
+
+        const btn = document.getElementById('btnKirimKuis');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengirim...';
+        
+        const waktuSekarangAngka = Date.now();
+        const waktuISO = new Date().toISOString(); 
+        const durasiDetik = Math.floor((waktuSekarangAngka - waktuMulai) / 1000); 
+
+        const formData = new FormData(e.target);
+        const snapMateri = await get(ref(db, `materi/${id}`));
+        const dataMateri = snapMateri.val();
+        const soal = dataMateri.bank_soal;
+        
+        let benar = 0;
+        let totalSoal = Object.keys(soal).length;
+        Object.keys(soal).forEach(key => {
+            if(formData.get(key) === soal[key].kunci) benar++;
+        });
+
+        const skor = Math.round((benar / totalSoal) * 100);
+        const user = auth.currentUser;
+
+        if(user) {
+            try {
+                const userSnap = await get(ref(db, `users/${user.uid}/biodata`));
+                const namaSiswa = userSnap.exists() ? userSnap.val().nama : "Siswa";
+                const isLulus = skor >= 70;
+
+                const updates = {};
+                updates[`hasil_kuis/${id}/${user.uid}`] = {
+                    nama: namaSiswa,
+                    skor: skor,
+                    durasi: durasiDetik,
+                    tanggal: waktuSekarangAngka 
+                };
+                updates[`users/${user.uid}/progres/${id}`] = {
+                    skor: skor,
+                    lulus: isLulus,
+                    durasi: durasiDetik,
+                    waktu_pengerjaan: waktuISO 
+                };
+
+                await update(ref(db), updates);
+                
+                alert(isLulus ? `LULUS! Skor: ${skor}` : `BELUM LULUS. Skor: ${skor} (Minimal 70)`);
+                window.location.href = "materi.html";
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerText = "Kirim Jawaban & Selesai";
+                alert("Gagal mengirim hasil.");
+            }
+        }
+    };
+</script>
+</body>
+</html>
