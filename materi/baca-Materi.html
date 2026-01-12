@@ -53,8 +53,11 @@
     let waktuMulai; 
     let statusLulusUser = false;
 
-    // Diperbaiki: Jika ID tidak ada, arahkan keluar folder ke materi.html
-    if(!id) window.location.href = "../materi.html";
+    // Logika URL Parameter: Jika ID tidak ada di URL
+    if(!id) {
+        console.error("ID tidak ditemukan di URL");
+        window.location.href = "../materi.html";
+    }
 
     onAuthStateChanged(auth, (user) => {
         if (!user) {
@@ -66,41 +69,41 @@
 
     async function checkStatusAndLoad(uid) {
         try {
+            // Ambil Progres User
             const progSnap = await get(ref(db, `users/${uid}/progres/${id}`));
             statusLulusUser = progSnap.exists() && progSnap.val().lulus === true;
 
             await loadMateri();
 
             if (statusLulusUser) {
-                const btn = document.getElementById('btnKirimKuis');
-                btn.type = "button"; 
-                btn.classList.add('lulus-style');
-                btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk melanjutkan materi';
-                // Diperbaiki: Arahkan navigasi keluar folder
-                btn.onclick = () => window.location.href = "../materi.html";
-
-                document.querySelectorAll('input[type="radio"]').forEach(input => {
-                    input.disabled = true;
-                });
+                kunciKuis();
             }
-        } catch (error) {
-            console.error("Error checking progress:", error);
+        } catch (err) {
+            console.error("Gagal mengambil progres:", err);
+            await loadMateri(); // Tetap load materi meski progres gagal diambil
         }
     }
 
+    // FUNGSI UTAMA: Firebase Fetch & Render
     async function loadMateri() {
-        const snap = await get(ref(db, `materi/${id}`));
-        if(snap.exists()){
-            const data = snap.val();
-            document.getElementById('judul-materi').innerText = data.judul;
-            document.getElementById('isi-konten').innerHTML = data.konten;
-            if(data.hasKuis && data.bank_soal){
-                waktuMulai = Date.now(); 
-                renderKuis(data.bank_soal);
-                document.getElementById('kuis-area').style.display = "block";
+        try {
+            const snap = await get(ref(db, `materi/${id}`));
+            if(snap.exists()){
+                const data = snap.val();
+                document.getElementById('judul-materi').innerText = data.judul;
+                document.getElementById('isi-konten').innerHTML = data.konten;
+                
+                if(data.hasKuis && data.bank_soal){
+                    waktuMulai = Date.now(); 
+                    renderKuis(data.bank_soal);
+                    document.getElementById('kuis-area').style.display = "block";
+                }
+            } else {
+                document.getElementById('isi-konten').innerText = "Konten tidak ditemukan di database.";
             }
-        } else {
-            document.getElementById('isi-konten').innerText = "Materi tidak ditemukan.";
+        } catch (err) {
+            document.getElementById('isi-konten').innerText = "Gagal mengambil data dari database. Periksa koneksi atau Firebase Rules.";
+            console.error(err);
         }
     }
 
@@ -122,20 +125,27 @@
         });
     }
 
+    function kunciKuis() {
+        const btn = document.getElementById('btnKirimKuis');
+        btn.type = "button"; 
+        btn.classList.add('lulus-style');
+        btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Kamu sudah lulus, klik untuk kembali';
+        btn.onclick = () => window.location.href = "../materi.html";
+
+        document.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.disabled = true;
+        });
+    }
+
     document.getElementById('quizForm').onsubmit = async (e) => {
         e.preventDefault();
-
-        if(statusLulusUser) {
-            window.location.href = "../materi.html";
-            return;
-        }
+        if(statusLulusUser) return;
 
         const btn = document.getElementById('btnKirimKuis');
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Mengirim...';
         
         const waktuSekarangAngka = Date.now();
-        const waktuISO = new Date().toISOString(); 
         const durasiDetik = Math.floor((waktuSekarangAngka - waktuMulai) / 1000); 
 
         const formData = new FormData(e.target);
@@ -160,22 +170,14 @@
 
                 const updates = {};
                 updates[`hasil_kuis/${id}/${user.uid}`] = {
-                    nama: namaSiswa,
-                    skor: skor,
-                    durasi: durasiDetik,
-                    tanggal: waktuSekarangAngka 
+                    nama: namaSiswa, skor, durasi: durasiDetik, tanggal: waktuSekarangAngka 
                 };
                 updates[`users/${user.uid}/progres/${id}`] = {
-                    skor: skor,
-                    lulus: isLulus,
-                    durasi: durasiDetik,
-                    waktu_pengerjaan: waktuISO 
+                    skor, lulus: isLulus, durasi: durasiDetik, waktu_pengerjaan: new Date().toISOString()
                 };
 
                 await update(ref(db), updates);
-                
                 alert(isLulus ? `LULUS! Skor: ${skor}` : `BELUM LULUS. Skor: ${skor} (Minimal 70)`);
-                // Diperbaiki: Navigasi keluar folder setelah kuis selesai
                 window.location.href = "../materi.html";
             } catch (error) {
                 btn.disabled = false;
