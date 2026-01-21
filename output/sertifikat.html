@@ -172,16 +172,20 @@
 
             const userData = userSnap.val();
             const role = (userData.biodata?.role || "").toLowerCase();
-            // Otoritas Sama: Guru dan Admin dianggap sebagai staff/admin panel
             const isStaff = role === "admin" || role === "guru";
             
             // LOGIKA AKSES
             if (!isStaff) {
-                // Jika Siswa, cek kelulusan
-                const isLulus = userData.lulus_final || localStorage.getItem(`status_lulus_final_${uid}`);
-                if (isLulus !== "true" && isLulus !== true) {
+                // Cek status kelulusan di database (Path disesuaikan dengan struktur progres)
+                const isLulusDB = userData.progres?.status_final === "LULUS" || userData.lulus_final === "true" || userData.lulus_final === true;
+                const isLulusLocal = localStorage.getItem(`status_lulus_final_${uid}`) === "true";
+
+                if (!isLulusDB && !isLulusLocal) {
                     alert("Akses dibatasi. Selesaikan materi untuk mendapatkan sertifikat.");
-                    window.location.href = "laporan-akhir-topologi.html";
+                    
+                    // PERBAIKAN: Gunakan path relatif yang aman agar tidak 404
+                    // Asumsi file sertifikat ada di dalam folder 'pages', maka kembali ke root
+                    window.location.href = "../dashboard.html"; 
                     return;
                 }
             }
@@ -190,7 +194,8 @@
             const namaFinal = userData.biodata?.nama || userData.nama || "Pengguna";
             document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview ${role.charAt(0).toUpperCase() + role.slice(1)})` : namaFinal;
             
-            let nilai = localStorage.getItem(`nilai_sertifikat_${uid}`);
+            // Ambil Nilai (Utamakan dari DB, jika tidak ada baru dari localStorage)
+            let nilai = userData.progres?.nilai_akhir || localStorage.getItem(`nilai_sertifikat_${uid}`);
             if (isStaff && (!nilai || nilai === "0")) nilai = "100"; 
             document.getElementById("nilaiAkhir").innerText = nilai || "0";
 
@@ -216,7 +221,7 @@
             if (backupId) {
                 muatDataSertifikat({ uid: backupId });
             } else {
-                alert("Sesi berakhir. Silahkan login kembali.");
+                // PERBAIKAN: Redirect ke login dengan path yang benar
                 window.location.href = "../login.html";
             }
         }
@@ -224,11 +229,14 @@
 
     window.unduhPDF = function() {
         const element = document.getElementById("areaSertifikat");
-        const namaFile = document.getElementById("namaSiswa").innerText.replace(/\s+/g, '_');
+        const namaSiswa = document.getElementById("namaSiswa").innerText;
+        // Bersihkan nama file dari karakter spesial
+        const namaFileClean = namaSiswa.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        
         const opt = {
             margin: 0,
-            filename: `Sertifikat_${namaFile}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
+            filename: `Sertifikat_${namaFileClean}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 3, useCORS: true, logging: false },
             jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
         };
