@@ -7,14 +7,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
-        /* Reset dasar */
         * { box-sizing: border-box; }
         body { margin: 0; background: #eaeaea; font-family: 'Poppins', sans-serif; }
         
-        /* Wrapper hanya untuk tampilan di web agar cantik */
         .wrapper { max-width: 1100px; margin: 30px auto; padding: 16px; }
         
-        /* Area Sertifikat: Ukuran Fixed A4 Landscape */
+        /* Area Sertifikat: Ukuran Standar A4 Landscape */
         .area { 
             width: 297mm; 
             height: 210mm; 
@@ -22,7 +20,7 @@
             margin: 0 auto;
             box-shadow: 0 0 20px rgba(0,0,0,0.2); 
             overflow: hidden;
-            display: block; /* Memastikan tidak ada inline-space */
+            position: relative;
         }
 
         .sertifikat {
@@ -72,10 +70,8 @@
         }
         .btn-download:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
 
-        /* Mencegah pergeseran saat download melalui browser print */
+        /* Mencegah konflik visual saat konversi */
         @media print {
-            body { background: none; margin: 0; padding: 0; }
-            .wrapper { margin: 0; padding: 0; }
             .actions { display: none; }
         }
     </style>
@@ -146,41 +142,29 @@
         try {
             const userSnap = await get(ref(db, `users/${uid}`));
             const kuisSnap = await get(ref(db, `hasil_kuis`));
-
             if (!userSnap.exists()) return;
-
             const userData = userSnap.val();
             const kuisData = kuisSnap.exists() ? kuisSnap.val() : {};
             const role = (userData.biodata?.role || "siswa").toLowerCase();
             const isStaff = role === "admin" || role === "guru";
-
-            let materiSelesai = 0;
-            let totalNilai = 0;
+            let materiSelesai = 0; let totalNilai = 0;
             const daftarMateri = ['materi1', 'materi2', 'materi3', 'materi4'];
-
             daftarMateri.forEach(m => {
                 if (kuisData[m] && kuisData[m][uid]) {
-                    materiSelesai++;
-                    totalNilai += kuisData[m][uid].skor;
+                    materiSelesai++; totalNilai += kuisData[m][uid].skor;
                 }
             });
-
             const rataRata = materiSelesai > 0 ? Math.round(totalNilai / materiSelesai) : 0;
-            
             const namaFinal = userData.biodata?.nama || userData.nama || "Siswa PJTJ";
             document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview)` : namaFinal;
             document.getElementById("nilaiAkhir").innerText = isStaff ? "100" : rataRata;
-
             const date = new Date();
             const uniquePart = uid.slice(0, 5).toUpperCase();
             document.getElementById("noSertifikat").innerText = `SRTF/TPLG/${date.getFullYear()}/${uniquePart}`;
             document.getElementById("tanggal").innerText = date.toLocaleDateString("id-ID", {
                 day: "2-digit", month: "long", year: "numeric"
             });
-
-        } catch (error) {
-            console.error("Error:", error);
-        }
+        } catch (error) { console.error("Error:", error); }
     }
 
     onAuthStateChanged(auth, (user) => {
@@ -192,15 +176,22 @@
         const element = document.getElementById("areaSertifikat");
         const namaSiswa = document.getElementById("namaSiswa").innerText;
         
+        // TEKNIK BARU: Gunakan html2canvas secara manual untuk memastikan presisi
         const opt = {
-            margin: 0, 
+            margin: 0,
             filename: `Sertifikat_${namaSiswa}.pdf`,
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { 
-                scale: 3, // Skala 3 sudah cukup tajam dan mencegah crash di HP
+                scale: 2, 
                 useCORS: true,
-                scrollY: 0, // KUNCI: Paksa scroll posisi 0 agar tidak terpotong ke bawah
-                windowWidth: 1200 // Memastikan canvas menangkap lebar yang konsisten
+                logging: false,
+                letterRendering: true,
+                scrollX: 0,
+                scrollY: 0,
+                x: element.getBoundingClientRect().left + window.scrollX, // Kunci: deteksi posisi kiri
+                y: element.getBoundingClientRect().top + window.scrollY,  // Kunci: deteksi posisi atas
+                width: element.offsetWidth,
+                height: element.offsetHeight
             },
             jsPDF: { 
                 unit: "mm", 
@@ -209,8 +200,8 @@
             }
         };
 
-        // Menggunakan worker untuk kontrol lebih presisi
-        html2pdf().from(element).set(opt).save();
+        // Langsung konversi
+        html2pdf().set(opt).from(element).save();
     }
 </script>
 </body>
