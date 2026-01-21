@@ -161,44 +161,35 @@
 
     async function muatDataSertifikat(user) {
         const uid = user.uid;
-
         try {
             const userSnap = await get(ref(db, `users/${uid}`));
-            
             if (!userSnap.exists()) {
                 alert("Profil pengguna tidak ditemukan di database.");
                 return;
             }
-
             const userData = userSnap.val();
             const role = (userData.biodata?.role || "").toLowerCase();
             const isStaff = role === "admin" || role === "guru";
-            
             if (!isStaff) {
                 const isLulusDB = userData.progres?.status_final === "LULUS" || userData.lulus_final === "true" || userData.lulus_final === true;
                 const isLulusLocal = localStorage.getItem(`status_lulus_final_${uid}`) === "true";
-
                 if (!isLulusDB && !isLulusLocal) {
                     alert("Akses dibatasi. Selesaikan materi untuk mendapatkan sertifikat.");
                     window.location.href = "../dashboard.html"; 
                     return;
                 }
             }
-
             const namaFinal = userData.biodata?.nama || userData.nama || "Pengguna";
             document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview ${role.charAt(0).toUpperCase() + role.slice(1)})` : namaFinal;
-            
             let nilai = userData.progres?.nilai_akhir || localStorage.getItem(`nilai_sertifikat_${uid}`);
             if (isStaff && (!nilai || nilai === "0")) nilai = "100"; 
             document.getElementById("nilaiAkhir").innerText = nilai || "0";
-
             const date = new Date();
             const uniquePart = uid.slice(0, 5).toUpperCase();
             document.getElementById("noSertifikat").innerText = `SRTF/TPLG/${date.getFullYear()}/${uniquePart}`;
             document.getElementById("tanggal").innerText = date.toLocaleDateString("id-ID", {
                 day: "2-digit", month: "long", year: "numeric"
             });
-
         } catch (error) {
             console.error("Error:", error);
             alert("Gagal mengambil data dari server.");
@@ -206,15 +197,11 @@
     }
 
     onAuthStateChanged(auth, (user) => {
-        if (user) {
-            muatDataSertifikat(user);
-        } else {
+        if (user) { muatDataSertifikat(user); } 
+        else {
             const backupId = localStorage.getItem("userLogin");
-            if (backupId) {
-                muatDataSertifikat({ uid: backupId });
-            } else {
-                window.location.href = "../login.html";
-            }
+            if (backupId) { muatDataSertifikat({ uid: backupId }); } 
+            else { window.location.href = "../login.html"; }
         }
     });
 
@@ -223,31 +210,33 @@
         const namaSiswa = document.getElementById("namaSiswa").innerText;
         const namaFileClean = namaSiswa.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         
+        // Pengaturan presisi untuk menghindari potongan dan geser posisi
         const opt = {
-            margin: 0,
+            margin: [0, 0, 0, 0],
             filename: `Sertifikat_${namaFileClean}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { 
-                scale: 2, // Scale 2 cukup untuk kualitas tinggi tanpa membuat file terlalu berat
+                scale: 2,
                 useCORS: true, 
                 logging: false,
-                letterRendering: true
+                scrollX: 0,
+                scrollY: 0,
+                y: 0 // Memastikan capture mulai dari titik 0 paling atas
             },
             jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-            pagebreak: { mode: ['avoid-all'] } // Mencegah pemotongan halaman otomatis
+            pagebreak: { mode: 'avoid-all' }
         };
         
-        // Memastikan area tepat 100% sebelum diproses
+        // Memaksa elemen masuk ke kontainer A4 secara pas
         element.style.width = "297mm";
         element.style.height = "210mm";
-        
+
         html2pdf().set(opt).from(element).save().then(() => {
-            // Mengembalikan ke ukuran awal setelah download selesai
+            // Reset kembali setelah download
             element.style.width = "100%";
             element.style.height = "auto";
         });
     }
 </script>
-
 </body>
 </html>
