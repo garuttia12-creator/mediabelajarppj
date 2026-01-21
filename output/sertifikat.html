@@ -7,20 +7,22 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <style>
+        /* Reset dasar */
+        * { box-sizing: border-box; }
         body { margin: 0; background: #eaeaea; font-family: 'Poppins', sans-serif; }
         
-        /* Layout untuk tampilan Web */
+        /* Wrapper hanya untuk tampilan di web agar cantik */
         .wrapper { max-width: 1100px; margin: 30px auto; padding: 16px; }
         
-        /* Area ini yang akan ditarik oleh PDF */
+        /* Area Sertifikat: Ukuran Fixed A4 Landscape */
         .area { 
             width: 297mm; 
             height: 210mm; 
             background: #fff; 
             margin: 0 auto;
             box-shadow: 0 0 20px rgba(0,0,0,0.2); 
-            overflow: hidden; 
-            box-sizing: border-box;
+            overflow: hidden;
+            display: block; /* Memastikan tidak ada inline-space */
         }
 
         .sertifikat {
@@ -29,7 +31,6 @@
             position: relative;
             background: #fff;
             padding: 40px 60px;
-            box-sizing: border-box;
             border: 20px solid #fff;
             outline: 2px solid #e93538;
             outline-offset: -15px;
@@ -71,18 +72,18 @@
         }
         .btn-download:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
 
-        /* Mencegah pergeseran saat download */
+        /* Mencegah pergeseran saat download melalui browser print */
         @media print {
-            body { background: none; }
-            .wrapper { margin: 0; padding: 0; max-width: none; }
-            .area { box-shadow: none; margin: 0; }
+            body { background: none; margin: 0; padding: 0; }
+            .wrapper { margin: 0; padding: 0; }
+            .actions { display: none; }
         }
     </style>
 </head>
 <body>
 
 <div class="wrapper">
-    <div class="area" id="areaSertifikat">
+    <div id="areaSertifikat" class="area">
         <div class="sertifikat">
             <div class="watermark">Pengembang: Karlina, Andini, Bunga (PTI IPI Garut)</div>
             <div class="header">
@@ -146,14 +147,10 @@
             const userSnap = await get(ref(db, `users/${uid}`));
             const kuisSnap = await get(ref(db, `hasil_kuis`));
 
-            if (!userSnap.exists()) {
-                alert("Profil tidak ditemukan.");
-                return;
-            }
+            if (!userSnap.exists()) return;
 
             const userData = userSnap.val();
             const kuisData = kuisSnap.exists() ? kuisSnap.val() : {};
-            
             const role = (userData.biodata?.role || "siswa").toLowerCase();
             const isStaff = role === "admin" || role === "guru";
 
@@ -170,15 +167,6 @@
 
             const rataRata = materiSelesai > 0 ? Math.round(totalNilai / materiSelesai) : 0;
             
-            if (!isStaff && materiSelesai < 4) {
-                const isLulusProfil = userData.progres?.status_final === "LULUS" || userData.lulus_final === true;
-                if (!isLulusProfil) {
-                    alert(`Akses Dibatasi! Anda baru menyelesaikan ${materiSelesai} dari 4 materi.`);
-                    window.location.href = "../dashboard.html";
-                    return;
-                }
-            }
-
             const namaFinal = userData.biodata?.nama || userData.nama || "Siswa PJTJ";
             document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview)` : namaFinal;
             document.getElementById("nilaiAkhir").innerText = isStaff ? "100" : rataRata;
@@ -191,8 +179,7 @@
             });
 
         } catch (error) {
-            console.error("Error Detail:", error);
-            alert("Terjadi kesalahan sistem.");
+            console.error("Error:", error);
         }
     }
 
@@ -205,27 +192,25 @@
         const element = document.getElementById("areaSertifikat");
         const namaSiswa = document.getElementById("namaSiswa").innerText;
         
-        // Pengaturan PDF agar Auto Center dan Single Page
         const opt = {
-            margin: 0, // Margin nol agar pas di kertas
+            margin: 0, 
             filename: `Sertifikat_${namaSiswa}.pdf`,
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { 
-                scale: 4, // Skala tinggi untuk kualitas HD
-                useCORS: true, 
-                logging: false,
-                letterRendering: true
+                scale: 3, // Skala 3 sudah cukup tajam dan mencegah crash di HP
+                useCORS: true,
+                scrollY: 0, // KUNCI: Paksa scroll posisi 0 agar tidak terpotong ke bawah
+                windowWidth: 1200 // Memastikan canvas menangkap lebar yang konsisten
             },
             jsPDF: { 
                 unit: "mm", 
                 format: "a4", 
-                orientation: "landscape",
-                compressPDF: true
+                orientation: "landscape"
             }
         };
 
-        // Jalankan perintah simpan
-        html2pdf().set(opt).from(element).save();
+        // Menggunakan worker untuk kontrol lebih presisi
+        html2pdf().from(element).set(opt).save();
     }
 </script>
 </body>
