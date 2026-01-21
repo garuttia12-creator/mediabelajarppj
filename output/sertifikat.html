@@ -9,10 +9,7 @@
     <style>
         body { margin: 0; background: #eaeaea; font-family: 'Poppins', sans-serif; }
         .wrapper { max-width: 1100px; margin: 30px auto; padding: 16px; }
-
-        /* A4 Landscape Ratio */
         .area { width: 100%; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.2); overflow: hidden; }
-
         .sertifikat {
             width: 100%;
             aspect-ratio: 297 / 210;
@@ -24,61 +21,27 @@
             outline: 2px solid #e93538;
             outline-offset: -15px;
         }
-
-        /* Ornamen Sudut */
         .sertifikat::before {
             content: ""; position: absolute; inset: 30px;
-            border: 1px solid #d4af37; /* Gold color */
+            border: 1px solid #d4af37;
             pointer-events: none;
         }
-
-        .watermark {
-            position: absolute; bottom: 20px; right: 30px;
-            font-size: 10px; color: #999; font-style: italic;
-        }
-
-        /* Header */
+        .watermark { position: absolute; bottom: 20px; right: 30px; font-size: 10px; color: #999; font-style: italic; }
         .header { text-align: center; margin-bottom: 20px; }
         .logo { display: flex; justify-content: center; gap: 40px; margin-bottom: 15px; align-items: center; }
         .logo img { height: 70px; object-fit: contain; }
-
         h1 { margin: 0; font-family: 'Playfair Display', serif; font-size: 42px; color: #1a237e; letter-spacing: 2px; }
         .nomor { margin-top: 5px; font-size: 14px; color: #555; }
-
-        /* Konten */
         .konten { text-align: center; margin-top: 30px; }
-        .nama { 
-            font-size: 40px; 
-            font-family: 'Playfair Display', serif;
-            font-weight: 700; 
-            color: #b8860b; /* Goldenrod */
-            margin: 10px 0;
-            text-transform: capitalize;
-        }
+        .nama { font-size: 40px; font-family: 'Playfair Display', serif; font-weight: 700; color: #b8860b; margin: 10px 0; text-transform: capitalize; }
         .garis-nama { width: 60%; height: 2px; background: linear-gradient(90deg, transparent, #333, transparent); margin: 0 auto 15px; }
         .keterangan { max-width: 85%; margin: 0 auto; font-size: 16px; line-height: 1.6; color: #333; }
-
-        .nilai-box {
-            margin: 20px auto;
-            padding: 10px;
-            border: 1px double #d4af37;
-            display: inline-block;
-            min-width: 150px;
-        }
-
-        /* Footer TTD */
-        .footer {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-around;
-            text-align: center;
-        }
+        .nilai-box { margin: 20px auto; padding: 10px; border: 1px double #d4af37; display: inline-block; min-width: 150px; }
+        .footer { margin-top: 50px; display: flex; justify-content: space-around; text-align: center; }
         .ttd { width: 250px; font-size: 14px; }
         .ttd img { height: 60px; margin: 5px 0; }
         .ttd .nama-ttd { font-weight: 700; border-bottom: 1.5px solid #333; display: inline-block; padding: 0 10px; }
         .nip { font-size: 12px; margin-top: 2px; }
-
-        /* Actions */
         .actions { text-align: center; margin-top: 30px; padding-bottom: 50px; }
         .btn-download {
             padding: 15px 40px; border: none; border-radius: 50px;
@@ -87,7 +50,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: 0.3s;
         }
         .btn-download:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
-
         @media print { .actions { display: none; } }
     </style>
 </head>
@@ -97,7 +59,6 @@
     <div class="area" id="areaSertifikat">
         <div class="sertifikat">
             <div class="watermark">Pengembang: Karlina, Andini, Bunga (PTI IPI Garut)</div>
-
             <div class="header">
                 <div class="logo">
                     <img src="../img/logo-smkn9.png" alt="Logo Sekolah">
@@ -106,27 +67,22 @@
                 <h1>SERTIFIKAT KELULUSAN</h1>
                 <div class="nomor">Nomor: <span id="noSertifikat">...</span></div>
             </div>
-
             <div class="konten">
                 <p style="margin-bottom: 5px;">Diberikan kepada:</p>
                 <div class="nama" id="namaSiswa">Memuat Nama...</div>
                 <div class="garis-nama"></div>
-
                 <div class="keterangan">
                     Telah menyelesaikan dan dinyatakan <b>LULUS</b> pada mata pelajaran <br>
                     <b>Topologi Jaringan</b> melalui media pembelajaran digital berbasis web <br>
                     Tahun Ajaran <b>2025 / 2026</b>
                 </div>
-
                 <div class="nilai-box">
-                    NILAI AKHIR: <b id="nilaiAkhir" style="font-size: 20px;">0</b>
+                    NILAI RATA-RATA: <b id="nilaiAkhir" style="font-size: 20px;">0</b>
                 </div>
-
                 <div style="margin-top: 10px; font-size: 14px;">
                     Garut, <span id="tanggal"></span>
                 </div>
             </div>
-
             <div class="footer">
                 <div class="ttd">
                     Kepala Sekolah SMKN 9 Garut<br>
@@ -134,7 +90,6 @@
                     <div class="nama-ttd">Moh Rofik Zen, S.Pd., M.M.Pd</div><br>
                     <div class="nip">NIP. 19640613 199412 1 002</div>
                 </div>
-
                 <div class="ttd">
                     Guru Mata Pelajaran<br>
                     <img src="../img/ttd-gurumapel.png" style="opacity: 0.9;"><br>
@@ -144,10 +99,9 @@
             </div>
         </div>
     </div>
-
     <div class="actions">
         <button class="btn-download" onclick="unduhPDF()">
-            <i class="fa-solid fa-file-pdf"></i> ⬇ Unduh Sertifikat (PDF)
+            ⬇ Unduh Sertifikat (PDF)
         </button>
     </div>
 </div>
@@ -162,80 +116,84 @@
     async function muatDataSertifikat(user) {
         const uid = user.uid;
         try {
+            // 1. Ambil data profil user
             const userSnap = await get(ref(db, `users/${uid}`));
+            // 2. Ambil data hasil kuis untuk validasi real-time
+            const kuisSnap = await get(ref(db, `hasil_kuis`));
+
             if (!userSnap.exists()) {
-                alert("Profil pengguna tidak ditemukan di database.");
+                alert("Profil tidak ditemukan.");
                 return;
             }
+
             const userData = userSnap.val();
-            const role = (userData.biodata?.role || "").toLowerCase();
+            const kuisData = kuisSnap.exists() ? kuisSnap.val() : {};
+            
+            const role = (userData.biodata?.role || "siswa").toLowerCase();
             const isStaff = role === "admin" || role === "guru";
-            if (!isStaff) {
-                const isLulusDB = userData.progres?.status_final === "LULUS" || userData.lulus_final === "true" || userData.lulus_final === true;
-                const isLulusLocal = localStorage.getItem(`status_lulus_final_${uid}`) === "true";
-                if (!isLulusDB && !isLulusLocal) {
-                    alert("Akses dibatasi. Selesaikan materi untuk mendapatkan sertifikat.");
-                    window.location.href = "../dashboard.html"; 
+
+            // LOGIKA VALIDASI BARU:
+            // Cek apakah UID ini ada di semua materi (materi1 s/d materi4)
+            let materiSelesai = 0;
+            let totalNilai = 0;
+            const daftarMateri = ['materi1', 'materi2', 'materi3', 'materi4'];
+
+            daftarMateri.forEach(m => {
+                if (kuisData[m] && kuisData[m][uid]) {
+                    materiSelesai++;
+                    totalNilai += kuisData[m][uid].skor;
+                }
+            });
+
+            const rataRata = materiSelesai > 0 ? Math.round(totalNilai / materiSelesai) : 0;
+            
+            // Bypass jika admin/guru, jika siswa cek apakah sudah 4 materi
+            if (!isStaff && materiSelesai < 4) {
+                // Cek cadangan di profil jika kuis_hasil belum sinkron
+                const isLulusProfil = userData.progres?.status_final === "LULUS" || userData.lulus_final === true;
+                if (!isLulusProfil) {
+                    alert(`Akses Dibatasi! Anda baru menyelesaikan ${materiSelesai} dari 4 materi. Silahkan selesaikan semua kuis materi.`);
+                    window.location.href = "../dashboard.html";
                     return;
                 }
             }
-            const namaFinal = userData.biodata?.nama || userData.nama || "Pengguna";
-            document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview ${role.charAt(0).toUpperCase() + role.slice(1)})` : namaFinal;
-            let nilai = userData.progres?.nilai_akhir || localStorage.getItem(`nilai_sertifikat_${uid}`);
-            if (isStaff && (!nilai || nilai === "0")) nilai = "100"; 
-            document.getElementById("nilaiAkhir").innerText = nilai || "0";
+
+            // Tampilkan Data
+            const namaFinal = userData.biodata?.nama || userData.nama || "Siswa PJTJ";
+            document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview)` : namaFinal;
+            
+            // Gunakan rata-rata kuis asli dari database hasil_kuis
+            document.getElementById("nilaiAkhir").innerText = isStaff ? "100" : rataRata;
+
             const date = new Date();
             const uniquePart = uid.slice(0, 5).toUpperCase();
             document.getElementById("noSertifikat").innerText = `SRTF/TPLG/${date.getFullYear()}/${uniquePart}`;
             document.getElementById("tanggal").innerText = date.toLocaleDateString("id-ID", {
                 day: "2-digit", month: "long", year: "numeric"
             });
+
         } catch (error) {
-            console.error("Error:", error);
-            alert("Gagal mengambil data dari server.");
+            console.error("Error Detail:", error);
+            alert("Terjadi kesalahan sistem.");
         }
     }
 
     onAuthStateChanged(auth, (user) => {
         if (user) { muatDataSertifikat(user); } 
-        else {
-            const backupId = localStorage.getItem("userLogin");
-            if (backupId) { muatDataSertifikat({ uid: backupId }); } 
-            else { window.location.href = "../login.html"; }
-        }
+        else { window.location.href = "../login.html"; }
     });
 
     window.unduhPDF = function() {
         const element = document.getElementById("areaSertifikat");
         const namaSiswa = document.getElementById("namaSiswa").innerText;
-        const namaFileClean = namaSiswa.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        
-        // Pengaturan presisi untuk menghindari potongan dan geser posisi
         const opt = {
-            margin: [0, 0, 0, 0],
-            filename: `Sertifikat_${namaFileClean}.pdf`,
+            margin: 0,
+            filename: `Sertifikat_${namaSiswa}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2,
-                useCORS: true, 
-                logging: false,
-                scrollX: 0,
-                scrollY: 0,
-                y: 0 // Memastikan capture mulai dari titik 0 paling atas
-            },
-            jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-            pagebreak: { mode: 'avoid-all' }
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }
         };
-        
-        // Memaksa elemen masuk ke kontainer A4 secara pas
-        element.style.width = "297mm";
-        element.style.height = "210mm";
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            // Reset kembali setelah download
-            element.style.width = "100%";
-            element.style.height = "auto";
-        });
+        html2pdf().set(opt).from(element).save();
     }
 </script>
 </body>
