@@ -116,7 +116,7 @@
                 </tr>
             </thead>
             <tbody id="siswa-list">
-                <tr><td colspan="4" style="text-align:center; opacity:0.5; padding: 40px;">Pilih nomor materi di atas</td></tr>
+                <tr><td colspan="4" style="text-align:center; opacity:0.5; padding: 40px;">Pilih nomor indikator di atas</td></tr>
             </tbody>
         </table>
     </div>
@@ -179,7 +179,7 @@
             materiData.forEach(m => {
                 const opt = document.createElement('option');
                 opt.value = m.key;
-                opt.textContent = `Materi ${m.id_urut}`;
+                opt.textContent = `Indikator ${m.id_urut}`;
                 selectMateri.appendChild(opt);
             });
         }
@@ -214,6 +214,7 @@
 
                 const record = {
                     nama: data.nama,
+                    kelas: data.kelas,
                     skor: data.skor,
                     durasi: data.durasi
                 };
@@ -265,4 +266,5 @@
 </script>
 </body>
 </html>
+
 
