@@ -22,6 +22,7 @@
             display: flex; /* Tambahkan ini */
             align-items: center; /* Tambahkan ini untuk center vertikal */
             justify-content: center; /* Tambahkan ini untuk center horizontal */
+            overflow: hidden;
         }
 
         .sertifikat {
@@ -190,42 +191,37 @@
         else { window.location.href = "../login.html"; }
     });
 
-    window.unduhPDF = function() {
-    const element = document.getElementById("areaSertifikat");
-    const namaSiswa = document.getElementById("namaSiswa").innerText;
-    
-    const opt = {
-        margin: [10, 10, 10, 10], // Memberikan jarak aman di tepi kertas
-        filename: `Sertifikat_${namaSiswa}.pdf`,
-        image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { 
-            scale: 2, 
-            useCORS: true,
-            logging: false,
-            letterRendering: true,
-            // Menghapus x dan y manual agar tidak terkunci di koordinat layar
-        },
-        jsPDF: { 
-            unit: "mm", 
-            format: "a4", 
-            orientation: "landscape",
-            compress: true
-        }
-    };
-
-    // Gunakan metode .from().set().save() tanpa x/y manual agar auto-fit
-    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
-        // Logika tambahan jika ingin benar-benar presisi di tengah kertas
-        // Namun secara default opt.margin sudah cukup membantu
-    }).save();
-}
+   window.unduhPDF = function() {
+        const element = document.getElementById("areaSertifikat");
+        const namaSiswa = document.getElementById("namaSiswa").innerText;
+        
+        const opt = {
+            margin: [0, 0, 0, 0], 
+            filename: `Sertifikat_${namaSiswa}.pdf`,
+            image: { type: 'jpeg', quality: 1.0 },
+            html2canvas: { 
+                scale: 2, 
+                useCORS: true,
+                logging: false,
+                letterRendering: true,
+                scrollX: 0,
+                scrollY: 0
+            },
+            jsPDF: { 
+                unit: "mm", 
+                format: "a4", 
+                orientation: "landscape",
+                compress: true
+            }
         };
 
-        // Langsung konversi
+        // Cara paling aman untuk auto-center
         html2pdf().set(opt).from(element).save();
-    }
+    }; // <--- Pastikan penutup ini benar
+</script>
 </script>
 </body>
 </html>
+
 
 
