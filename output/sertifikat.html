@@ -128,34 +128,62 @@
     const auth = getAuth();
 
     async function muatDataSertifikat(user) {
-        const uid = user.uid;
-        try {
-            const userSnap = await get(ref(db, `users/${uid}`));
-            const kuisSnap = await get(ref(db, `hasil_kuis`));
-            if (!userSnap.exists()) return;
-            const userData = userSnap.val();
-            const kuisData = kuisSnap.exists() ? kuisSnap.val() : {};
-            const role = (userData.biodata?.role || "siswa").toLowerCase();
-            const isStaff = role === "admin" || role === "guru";
-            let materiSelesai = 0; let totalNilai = 0;
-            const daftarMateri = ['materi1', 'materi2', 'materi3', 'materi4'];
-            daftarMateri.forEach(m => {
-                if (kuisData[m] && kuisData[m][uid]) {
-                    materiSelesai++; totalNilai += kuisData[m][uid].skor;
-                }
-            });
-            const rataRata = materiSelesai > 0 ? Math.round(totalNilai / materiSelesai) : 0;
-            const namaFinal = userData.biodata?.nama || userData.nama || "Siswa PJTJ";
-            document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview)` : namaFinal;
-            document.getElementById("nilaiAkhir").innerText = isStaff ? "100" : rataRata;
-            const date = new Date();
-            const uniquePart = uid.slice(0, 5).toUpperCase();
-            document.getElementById("noSertifikat").innerText = `SRTF/TPLG/${date.getFullYear()}/${uniquePart}`;
-            document.getElementById("tanggal").innerText = date.toLocaleDateString("id-ID", {
-                day: "2-digit", month: "long", year: "numeric"
-            });
-        } catch (error) { console.error("Error:", error); }
+    const uid = user.uid;
+    try {
+        // Ambil data biodata user
+        const userSnap = await get(ref(db, `users/${uid}/biodata`));
+        // Ambil SEMUA hasil kuis
+        const kuisSnap = await get(ref(db, `hasil_kuis`));
+
+        if (!userSnap.exists()) {
+            console.error("Biodata tidak ditemukan");
+            document.getElementById("namaSiswa").innerText = "Biodata Tidak Ditemukan";
+            return;
+        }
+
+        const userData = userSnap.val();
+        const kuisData = kuisSnap.exists() ? kuisSnap.val() : {};
+        
+        const role = (userData.role || "siswa").toLowerCase();
+        const isStaff = role === "admin" || role === "guru";
+
+        let materiSelesai = 0; 
+        let totalNilai = 0;
+        
+        // Sesuaikan dengan key materi di database Anda (materi1, materi2, dst)
+        const daftarMateri = ['materi1', 'materi2', 'materi3', 'materi4'];
+        
+        daftarMateri.forEach(m => {
+            // Pastikan kuisData[m] ada dan kuisData[m][uid] ada
+            if (kuisData[m] && kuisData[m][uid]) {
+                materiSelesai++; 
+                totalNilai += Number(kuisData[m][uid].skor || 0);
+            }
+        });
+
+        // Hitung rata-rata
+        const rataRata = materiSelesai > 0 ? Math.round(totalNilai / materiSelesai) : 0;
+        
+        // Tampilkan Nama
+        const namaFinal = userData.nama || "Siswa PJTJ";
+        document.getElementById("namaSiswa").innerText = isStaff ? `${namaFinal} (Preview)` : namaFinal;
+        
+        // Tampilkan Nilai (Jika admin beri 100 untuk preview)
+        document.getElementById("nilaiAkhir").innerText = isStaff ? "100" : rataRata;
+
+        // Atur Nomor Sertifikat & Tanggal
+        const date = new Date();
+        const uniquePart = uid.slice(0, 5).toUpperCase();
+        document.getElementById("noSertifikat").innerText = `SRTF/TPLG/${date.getFullYear()}/${uniquePart}`;
+        document.getElementById("tanggal").innerText = date.toLocaleDateString("id-ID", {
+            day: "2-digit", month: "long", year: "numeric"
+        });
+
+    } catch (error) { 
+        console.error("Error Detail:", error);
+        document.getElementById("namaSiswa").innerText = "Gagal Memuat Data";
     }
+}
 
     onAuthStateChanged(auth, (user) => {
         if (user) { muatDataSertifikat(user); } 
