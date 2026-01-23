@@ -64,6 +64,41 @@
         @media (max-width: 600px) {
             td, th { padding: 10px 5px; font-size: 13px; }
             .container { padding-top: 100px; }
+
+            /* Pesan Motivasi */
+            .motivation-container {
+                margin-top: 25px;
+                padding-top: 20px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                }
+
+            .msg-box {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                padding: 15px;
+                border-radius: 12px;
+                margin-bottom: 10px;
+                font-size: 14px;
+                line-height: 1.5;
+                }
+
+            .top-rank {
+                background: rgba(248, 196, 113, 0.1);
+                border: 1px solid rgba(248, 196, 113, 0.3);
+                color: #f8c471;
+                }
+
+            .other-rank {
+                background: rgba(76, 201, 240, 0.1);
+                border: 1px solid rgba(76, 201, 240, 0.3);
+                color: #4cc9f0;
+                }
+
+            .msg-box i {
+                font-size: 20px;
+                }
+   
         }
     </style>
 </head>
@@ -119,6 +154,15 @@
                 <tr><td colspan="4" style="text-align:center; opacity:0.5; padding: 40px;">Pilih nomor indikator di atas</td></tr>
             </tbody>
         </table>
+            <div id="motivation-msg" class="motivation-container">
+            <div class="msg-box top-rank">
+                <i class="fa-solid fa-fire"></i>
+                <p>Selamat untuk 10 Besar! Pertahankan prestasimu dan teruslah menginspirasi teman-temanmu!</p>
+            </div>
+            <div class="msg-box other-rank">
+                <i class="fa-solid fa-rocket"></i>
+                <p>Belum masuk peringkat? Jangan menyerah! Teruslah belajar, asah kemampuanmu, dan jadilah yang terbaik di sesi berikutnya!</p>
+            </div>
     </div>
 </div>
 
@@ -253,6 +297,12 @@
             const menit = Math.floor(item.durasi / 60);
             const detik = item.durasi % 60;
             const durasiText = menit > 0 ? `${menit}m ${detik}s` : `${detik}s`;
+            const msg = document.getElementById('motivation-msg');
+                if (dataArr.length > 0) {
+                    msg.style.display = 'block';
+                } else {
+                    msg.style.display = 'none';
+                }
 
             element.innerHTML += `
                 <tr>
@@ -268,6 +318,7 @@
 </script>
 </body>
 </html>
+
 
 
 
