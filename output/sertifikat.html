@@ -53,12 +53,14 @@
         
         .konten { 
             text-align: center; 
-            margin-top: 80px; /* Ditambah agar teks lebih turun ke tengah area yang kosong */
+            margin-top: 50px; /* Ditambah agar teks lebih turun ke tengah area yang kosong */
         }
         .nama { font-size: 40px; font-family: 'Playfair Display', serif; font-weight: 700; color: #b8860b; margin: 10px 0; text-transform: capitalize; }
         .garis-nama { width: 60%; height: 2px; background: linear-gradient(90deg, transparent, #333, transparent); margin: 0 auto 15px; }
         
-        .keterangan { max-width: 85%; margin: 0 auto; font-size: 16px; line-height: 1.6; color: #333; }
+        .keterangan p {
+            margin: 5px 0; /* Mengatur jarak antar baris agar lebih rapat */
+        }
         .nilai-box { margin: 20px auto; padding: 10px; border: 1px double #d4af37; display: inline-block; min-width: 150px; }
         
         .actions { text-align: center; margin-top: 30px; padding-bottom: 50px; }
@@ -220,9 +222,9 @@
         html2pdf().set(opt).from(element).save();
     }; // <--- Pastikan penutup ini benar
 </script>
-</script>
 </body>
 </html>
+
 
 
 
