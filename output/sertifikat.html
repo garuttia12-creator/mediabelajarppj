@@ -14,13 +14,14 @@
         
         /* Area Sertifikat: Ukuran Standar A4 Landscape */
         .area { 
-            width: 297mm; 
+            width: 297mm;  /* Ukuran Fix A4 Landscape */
             height: 210mm; 
-            background: #fff; 
             margin: 0 auto;
-            box-shadow: 0 0 20px rgba(0,0,0,0.2); 
-            overflow: hidden;
+            background: #fff; 
             position: relative;
+            display: flex; /* Tambahkan ini */
+            align-items: center; /* Tambahkan ini untuk center vertikal */
+            justify-content: center; /* Tambahkan ini untuk center horizontal */
         }
 
         .sertifikat {
@@ -80,8 +81,7 @@
 <div class="wrapper">
     <div id="areaSertifikat" class="area">
         <div class="sertifikat">
-            <div class="watermark">Pengembang: Karlina, Andini, Bunga (PTI IPI Garut)</div>
-            <div class="header">
+           <div class="header">
                 <div class="logo">
                     <img src="../img/logo-smkn9.png" alt="Logo Sekolah">
                     <img src="../img/logo-ipigarut.png" alt="Logo IPI">
@@ -94,16 +94,20 @@
                 <div class="nama" id="namaSiswa">Memuat Nama...</div>
                 <div class="garis-nama"></div>
                 <div class="keterangan">
-                    Telah menyelesaikan dan dinyatakan <b>LULUS</b> pada mata pelajaran <br>
-                    <b>Topologi Jaringan</b> melalui media pembelajaran digital berbasis web <br>
-                    Tahun Ajaran <b>2025 / 2026</b>
-                </div>
+                    Sebagai bentuk apresiasi atas partisipasi aktif dalam menyelesaikan pembelajaran ini.
+                    Nilai akhir yang tercantum merupakan hasil dari proses pembelajan yang telah diikuti
+                    Terus belajar, terus berkembang.
+                 </div>
                 <div class="nilai-box">
                     NILAI RATA-RATA: <b id="nilaiAkhir" style="font-size: 20px;">0</b>
                 </div>
+                
                 <div style="margin-top: 10px; font-size: 14px;">
                     Garut, <span id="tanggal"></span>
                 </div>
+
+                  <div class="watermark">Pengembang: Karlina, Andini, Bunga (PTI IPI Garut)</div>
+                
             </div>
             </div>
         </div>
@@ -159,31 +163,34 @@
     });
 
     window.unduhPDF = function() {
-        const element = document.getElementById("areaSertifikat");
-        const namaSiswa = document.getElementById("namaSiswa").innerText;
-        
-        // TEKNIK BARU: Gunakan html2canvas secara manual untuk memastikan presisi
-        const opt = {
-            margin: 0,
-            filename: `Sertifikat_${namaSiswa}.pdf`,
-            image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true,
-                logging: false,
-                letterRendering: true,
-                scrollX: 0,
-                scrollY: 0,
-                x: element.getBoundingClientRect().left + window.scrollX, // Kunci: deteksi posisi kiri
-                y: element.getBoundingClientRect().top + window.scrollY,  // Kunci: deteksi posisi atas
-                width: element.offsetWidth,
-                height: element.offsetHeight
-            },
-            jsPDF: { 
-                unit: "mm", 
-                format: "a4", 
-                orientation: "landscape"
-            }
+    const element = document.getElementById("areaSertifikat");
+    const namaSiswa = document.getElementById("namaSiswa").innerText;
+    
+    const opt = {
+        margin: [10, 10, 10, 10], // Memberikan jarak aman di tepi kertas
+        filename: `Sertifikat_${namaSiswa}.pdf`,
+        image: { type: 'jpeg', quality: 1.0 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true,
+            logging: false,
+            letterRendering: true,
+            // Menghapus x dan y manual agar tidak terkunci di koordinat layar
+        },
+        jsPDF: { 
+            unit: "mm", 
+            format: "a4", 
+            orientation: "landscape",
+            compress: true
+        }
+    };
+
+    // Gunakan metode .from().set().save() tanpa x/y manual agar auto-fit
+    html2pdf().set(opt).from(element).toPdf().get('pdf').then(function (pdf) {
+        // Logika tambahan jika ingin benar-benar presisi di tengah kertas
+        // Namun secara default opt.margin sudah cukup membantu
+    }).save();
+}
         };
 
         // Langsung konversi
@@ -192,4 +199,5 @@
 </script>
 </body>
 </html>
+
 
