@@ -91,7 +91,7 @@
 <div class="container">
     <div class="header-section">
         <h1 class="gradient-text">Leaderboard</h1>
-        <p style="opacity: 0.7;">Peringkat nilai terbaik dan waktu tercepat</p>
+        <p style="opacity: 0.7;">Peringkat 10 Siswa terbaik dengan nilai dan waktu tercepat</p>
     </div>
 
     <div class="filter-box">
@@ -214,7 +214,7 @@
 
                 const record = {
                     nama: data.nama,
-                    kelas: data.kelas,
+                    kelas: allUsers[uid]?.biodata?.kelas || "-",
                     skor: data.skor,
                     durasi: data.durasi
                 };
@@ -224,8 +224,9 @@
             });
 
             const sortRank = (a, b) => (b.skor !== a.skor) ? (b.skor - a.skor) : (a.durasi - b.durasi);
+            const sepuluhTeratas = siswaArr.sort(sortRank).slice(0, 10);
 
-            renderTable(siswaArr.sort(sortRank), siswaList);
+            renderTable(sepuluhTeratas, siswaList);
 
         } catch (error) {
             console.error(error);
@@ -235,7 +236,7 @@
 
     function renderTable(dataArr, element) {
         if(dataArr.length === 0) {
-            element.innerHTML = "<tr><td colspan='4' style='text-align:center; opacity:0.5; padding: 20px;'>Data siswa tidak ditemukan.</td></tr>";
+            element.innerHTML = "<tr><td colspan='5' style='text-align:center; opacity:0.5; padding: 20px;'>Data siswa tidak ditemukan.</td></tr>";
             return;
         }
 
@@ -267,6 +268,7 @@
 </script>
 </body>
 </html>
+
 
 
 
