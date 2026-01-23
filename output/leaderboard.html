@@ -66,38 +66,53 @@
             .container { padding-top: 100px; }
 
             /* Pesan Motivasi */
-            .motivation-container {
-                margin-top: 25px;
-                padding-top: 20px;
-                border-top: 1px solid rgba(255,255,255,0.1);
-                }
+            .motivation-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 25px;
+    margin-top: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
 
-            .msg-box {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                padding: 15px;
-                border-radius: 12px;
-                margin-bottom: 10px;
-                font-size: 14px;
-                line-height: 1.5;
-                }
+.motivation-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
 
-            .top-rank {
-                background: rgba(248, 196, 113, 0.1);
-                border: 1px solid rgba(248, 196, 113, 0.3);
-                color: #f8c471;
-                }
+.msg-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
 
-            .other-rank {
-                background: rgba(76, 201, 240, 0.1);
-                border: 1px solid rgba(76, 201, 240, 0.3);
-                color: #4cc9f0;
-                }
+.msg-item i {
+    font-size: 24px;
+    margin-top: 5px;
+}
 
-            .msg-box i {
-                font-size: 20px;
-                }
+.msg-item strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+}
+
+.msg-item p {
+    font-size: 13px;
+    opacity: 0.8;
+    line-height: 1.4;
+}
+
+.top-rank i, .top-rank strong { color: #f8c471; }
+.other-rank i, .other-rank strong { color: #4cc9f0; }
+
+.msg-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+    margin: 5px 0;
+}
    
         }
     </style>
@@ -297,13 +312,12 @@
             const menit = Math.floor(item.durasi / 60);
             const detik = item.durasi % 60;
             const durasiText = menit > 0 ? `${menit}m ${detik}s` : `${detik}s`;
-            const msg = document.getElementById('motivation-msg');
+            const msgCard = document.getElementById('motivation-msg');
                 if (dataArr.length > 0) {
-                    msg.style.display = 'block';
+                    msgCard.style.display = 'block'; // Munculkan kotak saat data ada
                 } else {
-                    msg.style.display = 'none';
+                    msgCard.style.display = 'none'; // Sembunyikan jika kosong
                 }
-
             element.innerHTML += `
                 <tr>
                     <td class="rank ${rankClass}">${rankDisplay}</td>
@@ -318,6 +332,7 @@
 </script>
 </body>
 </html>
+
 
 
 
